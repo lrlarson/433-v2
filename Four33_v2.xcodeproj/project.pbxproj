@@ -1,0 +1,593 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		74F878D72CC80D8700CEA3DD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74F878D62CC80D8700CEA3DD /* AVFoundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		74F878A52CC4028500CEA3DD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 74F8788B2CC4028400CEA3DD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 74F878922CC4028400CEA3DD;
+			remoteInfo = 433_v2;
+		};
+		74F878AF2CC4028500CEA3DD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 74F8788B2CC4028400CEA3DD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 74F878922CC4028400CEA3DD;
+			remoteInfo = 433_v2;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		74F878932CC4028400CEA3DD /* Four33_v2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Four33_v2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		74F878A42CC4028500CEA3DD /* Four33_v2Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Four33_v2Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		74F878AE2CC4028500CEA3DD /* Four33_v2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Four33_v2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		74F878D62CC80D8700CEA3DD /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		74F878952CC4028400CEA3DD /* Four33_v2 */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Four33_v2;
+			sourceTree = "<group>";
+		};
+		74F878A72CC4028500CEA3DD /* Four33_v2Tests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Four33_v2Tests;
+			sourceTree = "<group>";
+		};
+		74F878B12CC4028500CEA3DD /* Four33_v2UITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Four33_v2UITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		74F878902CC4028400CEA3DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				74F878D72CC80D8700CEA3DD /* AVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74F878A12CC4028500CEA3DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74F878AB2CC4028500CEA3DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		74F8788A2CC4028400CEA3DD = {
+			isa = PBXGroup;
+			children = (
+				74F878952CC4028400CEA3DD /* Four33_v2 */,
+				74F878A72CC4028500CEA3DD /* Four33_v2Tests */,
+				74F878B12CC4028500CEA3DD /* Four33_v2UITests */,
+				74F878D52CC80D8600CEA3DD /* Frameworks */,
+				74F878942CC4028400CEA3DD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		74F878942CC4028400CEA3DD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				74F878932CC4028400CEA3DD /* Four33_v2.app */,
+				74F878A42CC4028500CEA3DD /* Four33_v2Tests.xctest */,
+				74F878AE2CC4028500CEA3DD /* Four33_v2UITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		74F878D52CC80D8600CEA3DD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				74F878D62CC80D8700CEA3DD /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		74F878922CC4028400CEA3DD /* Four33_v2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 74F878B82CC4028500CEA3DD /* Build configuration list for PBXNativeTarget "Four33_v2" */;
+			buildPhases = (
+				74F8788F2CC4028400CEA3DD /* Sources */,
+				74F878902CC4028400CEA3DD /* Frameworks */,
+				74F878912CC4028400CEA3DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				74F878952CC4028400CEA3DD /* Four33_v2 */,
+			);
+			name = Four33_v2;
+			packageProductDependencies = (
+			);
+			productName = 433_v2;
+			productReference = 74F878932CC4028400CEA3DD /* Four33_v2.app */;
+			productType = "com.apple.product-type.application";
+		};
+		74F878A32CC4028500CEA3DD /* Four33_v2Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 74F878BB2CC4028500CEA3DD /* Build configuration list for PBXNativeTarget "Four33_v2Tests" */;
+			buildPhases = (
+				74F878A02CC4028500CEA3DD /* Sources */,
+				74F878A12CC4028500CEA3DD /* Frameworks */,
+				74F878A22CC4028500CEA3DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				74F878A62CC4028500CEA3DD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				74F878A72CC4028500CEA3DD /* Four33_v2Tests */,
+			);
+			name = Four33_v2Tests;
+			packageProductDependencies = (
+			);
+			productName = 433_v2Tests;
+			productReference = 74F878A42CC4028500CEA3DD /* Four33_v2Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		74F878AD2CC4028500CEA3DD /* Four33_v2UITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 74F878BE2CC4028500CEA3DD /* Build configuration list for PBXNativeTarget "Four33_v2UITests" */;
+			buildPhases = (
+				74F878AA2CC4028500CEA3DD /* Sources */,
+				74F878AB2CC4028500CEA3DD /* Frameworks */,
+				74F878AC2CC4028500CEA3DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				74F878B02CC4028500CEA3DD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				74F878B12CC4028500CEA3DD /* Four33_v2UITests */,
+			);
+			name = Four33_v2UITests;
+			packageProductDependencies = (
+			);
+			productName = 433_v2UITests;
+			productReference = 74F878AE2CC4028500CEA3DD /* Four33_v2UITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		74F8788B2CC4028400CEA3DD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1610;
+				TargetAttributes = {
+					74F878922CC4028400CEA3DD = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					74F878A32CC4028500CEA3DD = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 74F878922CC4028400CEA3DD;
+					};
+					74F878AD2CC4028500CEA3DD = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 74F878922CC4028400CEA3DD;
+					};
+				};
+			};
+			buildConfigurationList = 74F8788E2CC4028400CEA3DD /* Build configuration list for PBXProject "Four33_v2" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 74F8788A2CC4028400CEA3DD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 74F878942CC4028400CEA3DD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				74F878922CC4028400CEA3DD /* Four33_v2 */,
+				74F878A32CC4028500CEA3DD /* Four33_v2Tests */,
+				74F878AD2CC4028500CEA3DD /* Four33_v2UITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		74F878912CC4028400CEA3DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74F878A22CC4028500CEA3DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74F878AC2CC4028500CEA3DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		74F8788F2CC4028400CEA3DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74F878A02CC4028500CEA3DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		74F878AA2CC4028500CEA3DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		74F878A62CC4028500CEA3DD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 74F878922CC4028400CEA3DD /* Four33_v2 */;
+			targetProxy = 74F878A52CC4028500CEA3DD /* PBXContainerItemProxy */;
+		};
+		74F878B02CC4028500CEA3DD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 74F878922CC4028400CEA3DD /* Four33_v2 */;
+			targetProxy = 74F878AF2CC4028500CEA3DD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		74F878B62CC4028500CEA3DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		74F878B72CC4028500CEA3DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		74F878B92CC4028500CEA3DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Four33_v2/Four33_v2.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"Four33_v2/Preview Content\"";
+				DEVELOPMENT_TEAM = T58T2L6RSU;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Four33_v2;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.johncage.fourthreethree2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		74F878BA2CC4028500CEA3DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Four33_v2/Four33_v2.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = "\"Four33_v2/Preview Content\"";
+				DEVELOPMENT_TEAM = T58T2L6RSU;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Four33_v2;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.johncage.fourthreethree2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		74F878BC2CC4028500CEA3DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = T58T2L6RSU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "CageTrust.-33-v2Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Four33_v2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Four33_v2";
+			};
+			name = Debug;
+		};
+		74F878BD2CC4028500CEA3DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = T58T2L6RSU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "CageTrust.-33-v2Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Four33_v2.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Four33_v2";
+			};
+			name = Release;
+		};
+		74F878BF2CC4028500CEA3DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = T58T2L6RSU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "CageTrust.-33-v2UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = 433_v2;
+			};
+			name = Debug;
+		};
+		74F878C02CC4028500CEA3DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = T58T2L6RSU;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "CageTrust.-33-v2UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = 433_v2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		74F8788E2CC4028400CEA3DD /* Build configuration list for PBXProject "Four33_v2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				74F878B62CC4028500CEA3DD /* Debug */,
+				74F878B72CC4028500CEA3DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		74F878B82CC4028500CEA3DD /* Build configuration list for PBXNativeTarget "Four33_v2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				74F878B92CC4028500CEA3DD /* Debug */,
+				74F878BA2CC4028500CEA3DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		74F878BB2CC4028500CEA3DD /* Build configuration list for PBXNativeTarget "Four33_v2Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				74F878BC2CC4028500CEA3DD /* Debug */,
+				74F878BD2CC4028500CEA3DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		74F878BE2CC4028500CEA3DD /* Build configuration list for PBXNativeTarget "Four33_v2UITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				74F878BF2CC4028500CEA3DD /* Debug */,
+				74F878C02CC4028500CEA3DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 74F8788B2CC4028400CEA3DD /* Project object */;
+}
