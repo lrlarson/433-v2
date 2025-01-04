@@ -19,7 +19,7 @@ enum FileUtils {
     
     static func clearTempDirectory() -> Bool {
         var directoryContents: [URL]
-        let tempDir:URL = getTmpDirectory()
+        let tempDir:URL = getTmpDirURL()
         do {
             directoryContents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
         } catch {
@@ -49,16 +49,16 @@ enum FileUtils {
         return true
     }
     
-    static func getDocumentsDirectory() -> URL {
+    static func getDocumentsDirURL() -> URL {
         return  fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
 
-    static func getTmpDirectory() -> URL {
+    static func getTmpDirURL() -> URL {
         return  fileManager.temporaryDirectory
     }
         
-    static func getCurrentRecordingDirectory() -> URL {
-        return getTmpDirectory().appending(path: currentRecordingDirectory)
+    static func getCurrentRecordingURL() -> URL {
+        return getTmpDirURL().appending(path: currentRecordingDirectory)
     }
         
     static func createRecordingDir(url:URL) -> Bool {
@@ -71,101 +71,47 @@ enum FileUtils {
         return true
     }
     
-    static func buildFullPathFromOuterDirectory(outerDirectory:String,
-                                                recordingName:String,
-                                                filename:String) -> String {
-        return ""
-    }
     
-    /*
-     - (NSString *) buildFullPathFromOuterDirectory: (NSString *)outerDirectory
-     withRecordingName: (NSString *)recordingName
-     filename: (NSString *)filename
-     {
-     return [[outerDirectory stringByAppendingPathComponent:recordingName] stringByAppendingPathComponent:filename];
-     }
+    /* Formerly:
+     - (NSString *) buildFullPathFromOuterDirectory:
      
-     */
+     Use buildFullDocsURL, below
     
-    static func getPathToDocumentsDir() -> String {
-        return ""
+    static func buildTempRecordingDirFileURL(recordingName:String,
+                                                filename:String) -> URL {
+        return getTmpDirectory().appending(path: recordingName, directoryHint: .isDirectory).appending(path: filename)
     }
-    
-    /*
-     - (NSString *) getPathToDocumentsDir
-     {
-     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-     NSUserDomainMask, YES);
-     return [paths objectAtIndex:0];
-     }
-     
-     */
-    
-    static func buildPathToDocumentsSubdir(dirName:String) -> String {
-        return ""
-    }
-    
-    /*
-     - (NSString *) buildPathToDocumentsSubdir: (NSString *)dirName;
-     {
-     return [[self getPathToDocumentsDir] stringByAppendingPathComponent: dirName];
-     }
-     
-     */
+    */
+
     
     static func getMovementFileName(movement:String) -> String {
-        return ""
+        return String(format:"%@%@%@", "Movement", movement, appConstants.WAV_FORMAT_EXTENSION)
     }
-    
-    /*
-     - (NSString *) getMovementFileName: (NSString *)movement
-     {
-     return [NSString stringWithFormat:@"%@%@%@", @"Movement", movement, audioFormatFileExtension];
-     }
-     
-     */
     
     static func getMovementFileNameNoExt(movement:String) -> String {
-        return ""
+        return String(format:"%@%@", "Movement", movement)
     }
     
-    /*
-     - (NSString *) getMovementFileNameNoExt: (NSString *)movement
-     {
-     return [NSString stringWithFormat:@"%@%@", @"Movement", movement];
-     }
-     
-     */
     
-    static func buildRecordPathWithMovementName(movement:String) -> String {
-        return ""
-    }
-    
-    /*
+    /* Formerly:
      - (NSString *) buildRecordPathWithMovementName: (NSString *)movement
-     {
-     
-     return [[self getCurrentRecordingDirFullPath]
-     stringByAppendingPathComponent:[self getMovementFileName:movement]];
-     }
-     
      */
-    
-    static func buildPathWithDocumentsSubDir(subDirName:String, movement:String) -> String {
-        return ""
+    static func buildFullTempURL(movement:String) -> URL {
+        return getCurrentRecordingURL()
+            .appending(path: getMovementFileName(movement: movement))
     }
     
-    /*
-     - (NSString *) buildPathWithDocumentsSubDir: (NSString *)subDirName
-     MovementName: (NSString *)movement
-     {
-     return [[self buildPathToDocumentsSubdir: subDirName]
-     stringByAppendingPathComponent:[NSString stringWithFormat:@"%@%@%@",
-     @"Movement", movement,
-     audioFormatFileExtension]];
-     }
-     
-     */
+        
+    /* Formerly:
+     - (NSString *) buildPathWithDocumentsSubDir
+     Also replaces buildFullPathFromOuterDirectory
+    */
+    static func buildFullDocsURL(recordingName:String, movement:String) -> URL {
+        return getDocumentsDirURL()
+            .appending(path: recordingName, directoryHint: .isDirectory)
+            .appending(path: getMovementFileName(movement: movement))
+    }
+    
     
     static func writeMetadataToPath(path:String, metadata:String) -> String {
         return ""
