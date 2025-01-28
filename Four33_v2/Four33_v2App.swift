@@ -19,7 +19,7 @@ struct Four33_v2App: App {
         print("buildFullDocsURL test: ", grook)
         
         let url = URL(string: "file://Users/pkstone/Desktop/glork/")
-        let md = FileUtils.readMetaDataFromPath(url:url!)
+        let md = FileUtils.readMetaDataFromPath(url:url!)       // THIS NEEDS WORK
     }
     var body: some Scene {
         WindowGroup {
