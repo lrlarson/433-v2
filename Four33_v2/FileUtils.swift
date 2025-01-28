@@ -112,40 +112,47 @@ enum FileUtils {
             .appending(path: getMovementFileName(movement: movement))
     }
     
-    
-    static func writeMetadataToPath(path:String, metadata:String) -> String {
-        return ""
+    struct RecordingMetaData: Decodable {
+        let container: Dictionary<String, String>
     }
     
-    /*
+    /* Formerly:
      - (void)writeMetadataToPath: (NSString *)path WithDictionary: (NSMutableDictionary *)metadata
-     {
-     NSString *fullpath = [path stringByAppendingPathComponent:[self metadataFilename]];
-     BOOL success = [metadata writeToFile:fullpath atomically:YES];
-     if (!success) {
-     NSLog(@"Error writing metadata file.");
-     }
-     }
      
+     url: path including the piece name
      */
-    
-    static func readMetaDataFromPath(path:String) -> String {
-        return ""
+    static func writeMetadataToURL(url:URL, metadata:Dictionary<String, String>) -> Bool {
+        let meta_url = url.appending(path: metadataFilename)
+        do {
+            let data = try PropertyListEncoder().encode(metadata)
+            try data.write(to: meta_url)
+        } catch {
+            print("Error attempting to write recording metadata.")
+            return false
+        }
+        return true
     }
     
-    /*
+    
+    /* Formerly:
      - (NSMutableDictionary *)readMetaDataFromPath: (NSString *)path
-     {
-     NSString *metafilepath = [path stringByAppendingPathComponent:[self metadataFilename]];
-     return [self readMetaDataFromFullPath:metafilepath];
-     }
-     
      */
-    
-    static func readMetaDataFromFullPath(path:String) -> String {
-        return ""
+
+    static func readMetaDataFromPath(url:URL) -> Dictionary<String, String> {
+        let meta_url = url.appending(path: metadataFilename)
+        let dictionary:[String:String] = ["":""]
+        do {
+            let data = try Data(contentsOf: meta_url)
+            let dictionary = try PropertyListDecoder().decode(RecordingMetaData.self, from: data)
+        } catch {
+            print("Error attempting to read recording metadata.")
+            print(error)
+        }
+        return dictionary
     }
     
+
+       
     /*
      - (NSMutableDictionary *)readMetaDataFromFullPath:(NSString *)fullPath
      {

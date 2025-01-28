@@ -17,6 +17,9 @@ struct Four33_v2App: App {
         
         let grook = FileUtils.buildFullDocsURL(recordingName: "Ploobis", movement: "Two")
         print("buildFullDocsURL test: ", grook)
+        
+        let url = URL(string: "file://Users/pkstone/Desktop/glork/")
+        let md = FileUtils.readMetaDataFromPath(url:url!)
     }
     var body: some Scene {
         WindowGroup {

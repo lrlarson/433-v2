@@ -17,8 +17,7 @@ func requestRecordPermission() {
             print("Audio recording permission granted.")
         } else {
             // Handle permission denied
-        }
-    }
+        }     }
 }
 
 
