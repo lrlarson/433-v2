@@ -12,14 +12,32 @@ struct Four33_v2App: App {
     @Environment(\.scenePhase) private var scenePhase
     
     init() {
-        let screet = FileUtils.buildFullTempURL(movement: "Two")
-        print("buildFullTempURL test: ", screet)
+//        let screet = FileUtils.buildFullTempURL(movement: "Two")
+//        print("buildFullTempURL test: ", screet)
+//        
+//        let grook = FileUtils.buildFullDocsURL(recordingName: "Ploobis", movement: "Two")
+//        print("buildFullDocsURL test: ", grook)
         
-        let grook = FileUtils.buildFullDocsURL(recordingName: "Ploobis", movement: "Two")
-        print("buildFullDocsURL test: ", grook)
-        
-        let url = URL(string: "file://Users/pkstone/Desktop/glork/")
-        let md = FileUtils.readMetaDataFromPath(url:url!)       // THIS NEEDS WORK
+//        var url = Bundle.main.url(forResource:"metadata", withExtension: nil, subdirectory: "Seed_Recording")
+//        var md = FileUtils.readMetaDataFromURL(url: url!)
+//        md!.title = "Go Jump in a Lake"
+//        
+//        // Test: write metadata to outer docs folder
+//        var isDirectory = ObjCBool(true)
+//        let testurl:URL = FileUtils.getDocumentsDirURL()
+//            .appending(path: "Grelgus", directoryHint: URL.DirectoryHint.isDirectory)
+//        if (!FileManager.default.fileExists(atPath: testurl.path))
+//        {
+//            let success = FileUtils.createRecordingDir(url: testurl)
+//            print("Directory creation success: ", success)
+//        }
+//        
+//        url = FileUtils.getDocumentsDirURL()
+//                .appending(path: "Grelgus", directoryHint: URL.DirectoryHint.isDirectory )
+//                .appending(path:"metadata", directoryHint: URL.DirectoryHint.notDirectory)
+//        print("Metadata write test URL: ", url!.absoluteString)
+//        let success = FileUtils.writeMetadataToURL(url:url!, metadata: md!)
+//        print ("Metadata write success: ", success)
     }
     var body: some Scene {
         WindowGroup {

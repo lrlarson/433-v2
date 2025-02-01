@@ -37,6 +37,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		74F878952CC4028400CEA3DD /* Four33_v2 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFolders = (
+				Seed_Recording,
+			);
 			path = Four33_v2;
 			sourceTree = "<group>";
 		};
@@ -421,6 +424,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Four33-v2-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Four33_v2;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
@@ -459,6 +463,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Four33-v2-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Four33_v2;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;

@@ -112,22 +112,26 @@ enum FileUtils {
             .appending(path: getMovementFileName(movement: movement))
     }
     
-    struct RecordingMetaData: Decodable {
-        let container: Dictionary<String, String>
+    struct RecordingMetaData: Codable {
+        var created: String
+        var geohash: String
+        var title: String
     }
     
     /* Formerly:
      - (void)writeMetadataToPath: (NSString *)path WithDictionary: (NSMutableDictionary *)metadata
      
-     url: path including the piece name
+     url: path including the piece name and metadata filename
      */
-    static func writeMetadataToURL(url:URL, metadata:Dictionary<String, String>) -> Bool {
-        let meta_url = url.appending(path: metadataFilename)
+    static func writeMetadataToURL(url:URL, metadata:RecordingMetaData) -> Bool {
         do {
-            let data = try PropertyListEncoder().encode(metadata)
-            try data.write(to: meta_url)
+            let propEncoder = PropertyListEncoder()
+            propEncoder.outputFormat = .xml
+            let data = try propEncoder.encode(metadata)
+            try data.write(to: url)
         } catch {
             print("Error attempting to write recording metadata.")
+            print(error);
             return false
         }
         return true
@@ -136,19 +140,19 @@ enum FileUtils {
     
     /* Formerly:
      - (NSMutableDictionary *)readMetaDataFromPath: (NSString *)path
+
+     url: path including the piece name and metadata filename
      */
 
-    static func readMetaDataFromPath(url:URL) -> Dictionary<String, String> {
-        let meta_url = url.appending(path: metadataFilename)
-        let dictionary:[String:String] = ["":""]
+    static func readMetaDataFromURL(url:URL) -> RecordingMetaData? {
         do {
-            let data = try Data(contentsOf: meta_url)
-            let dictionary = try PropertyListDecoder().decode(RecordingMetaData.self, from: data)
+            let data = try Data(contentsOf: url)
+            let mdata = try PropertyListDecoder().decode(RecordingMetaData.self, from: data)
+            return mdata
         } catch {
             print("Error attempting to read recording metadata.")
-            print(error)
+            return nil
         }
-        return dictionary
     }
     
 
@@ -164,4 +168,22 @@ enum FileUtils {
      }
      
      */
+}
+
+
+func copyFilesFromBundleToDocumentsFolderWith(fileExtension: String) {
+    if let resPath = Bundle.main.resourcePath {
+        do {
+            let dirContents = try FileManager.default.contentsOfDirectory(atPath: resPath)
+            let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            let filteredFiles = dirContents.filter{ $0.contains(fileExtension)}
+            for fileName in filteredFiles {
+                if let documentsURL = documentsURL {
+                    let sourceURL = Bundle.main.bundleURL.appendingPathComponent(fileName)
+                    let destURL = documentsURL.appendingPathComponent(fileName)
+                    do { try FileManager.default.copyItem(at: sourceURL, to: destURL) } catch { }
+                }
+            }
+        } catch { }
+    }
 }
