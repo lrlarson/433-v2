@@ -20,10 +20,9 @@ struct Four33_v2App: App {
         
 //        var url = Bundle.main.url(forResource:"metadata", withExtension: nil, subdirectory: "Seed_Recording")
 //        var md = FileUtils.readMetaDataFromURL(url: url!)
-//        md!.title = "Go Jump in a Lake"
+//        md!.title = "Ultracrepidarian Fudgel"
 //        
 //        // Test: write metadata to outer docs folder
-//        var isDirectory = ObjCBool(true)
 //        let testurl:URL = FileUtils.getDocumentsDirURL()
 //            .appending(path: "Grelgus", directoryHint: URL.DirectoryHint.isDirectory)
 //        if (!FileManager.default.fileExists(atPath: testurl.path))
