@@ -6,28 +6,17 @@
 //
 
 import SwiftUI
-import AVFoundation
-
-
-func requestRecordPermission() {
-    AVAudioApplication.requestRecordPermission()
-        { granted in
-        if granted {
-            // Permission granted
-            print("Audio recording permission granted.")
-        } else {
-            // Handle permission denied
-        }     }
-}
 
 
 struct RecordPlayView: View {
     
     @State private var viewModel = ViewModel()      // RecordPlayView-ViewModel
+
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
     
+
     var body: some View {
         VStack {
             Text("A Nice Long Title For A Test")
@@ -53,6 +42,11 @@ struct RecordPlayView: View {
                         .font(.system(size: 20))
                 }
             }
+            .alert("Microphone permission needed", isPresented: $viewModel.displayPermissionAlert) {
+            } message: {
+                Text("If you wish to record your own performances of 4'33\", you will need to go to Settings/Privacy & Security/Microphone and enable this app. Otherwise, recordings will be blank.")
+            }
+
             
             VStack {
                 MovementProgressView(label_text:"Movement I", bar_length:52, prog_val:viewModel.move1prog)
@@ -163,6 +157,7 @@ struct MovementProgressView: View {
     }
 
 }
+
 
 /*
 #Preview {

@@ -6,11 +6,14 @@
 //
 
 import Foundation
+import AVFoundation
+import UIKit
 
 extension RecordPlayView {
-    @Observable
-    class ViewModel: PieceTimerDelegate {
+    @Observable class ViewModel: PieceTimerDelegate {
         private var pieceTimer:PieceTimer?
+        private var audioPlayer:AVAudioPlayer?
+        private var audioRecorder:AVAudioRecorder?
         private var secondsLeftInMovemnt = 0
         
         var levelOne: Double = 0.9
@@ -22,6 +25,8 @@ extension RecordPlayView {
         var isRecording = false
         var isPlaying = false
         
+        var displayPermissionAlert = false
+        
         init() {
             pieceTimer = PieceTimer(timerGr: appConstants.TIMER_GRAIN,
                                     mv1dur: appConstants.MVI_DURATION,
@@ -29,6 +34,7 @@ extension RecordPlayView {
                                     mv3dur: appConstants.MVIII_DURATION,
                                     interMvDur: appConstants.INTER_MOVEMENT_DURATION,
                                     deleg:self)
+            checkMicAuth()
         }
         
         func pieceTimerUpdate(eventType: timerEvent, newVal: Double) {
@@ -67,6 +73,28 @@ extension RecordPlayView {
             }
         }
         
+        // Check privacy authorizaton for this app to use the microphone.
+        // Warn user if microphone permission is denied.
+        // Return: true if 'allowed'
+        func checkMicAuth() -> Bool {
+            let micPermission = AVAudioApplication.shared.recordPermission
+            if (micPermission == .undetermined) {
+                AVAudioApplication.requestRecordPermission() { granted in
+                    if (!granted) {
+                        // Warn user that recording won't work without permission to use microphone
+                        self.displayPermissionAlert = true
+                    }
+                }
+                return false
+            }
+            else if (micPermission == .denied)
+            {
+                self.displayPermissionAlert = true
+                return false
+            }
+            return true
+        }
+        
         func killPieceTimer() {
             if (pieceTimer != nil) {
                 pieceTimer!.killTimer()
@@ -79,8 +107,12 @@ extension RecordPlayView {
         }
         
         func startRecording() {
-            isRecording = true
-            startPieceTimer()
+            // If microphone permission is not given, warn user
+            if (checkMicAuth())
+            {
+                isRecording = true
+                startPieceTimer()
+            }
         }
         
         func stopRecording() {

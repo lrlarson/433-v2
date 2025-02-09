@@ -48,6 +48,7 @@ struct appConstants {
 import SwiftUI
 
 struct ContentView: View {
+    
     var body: some View {
         TabView {
             Tab("Record and Play", systemImage: "mic.fill") {
