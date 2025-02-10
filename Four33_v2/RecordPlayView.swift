@@ -44,7 +44,7 @@ struct RecordPlayView: View {
             }
             .alert("Microphone permission needed", isPresented: $viewModel.displayPermissionAlert) {
             } message: {
-                Text("If you wish to record your own performances of 4'33\", you will need to go to Settings/Privacy & Security/Microphone and enable this app. Otherwise, recordings will be blank.")
+                Text("If you wish to record your own performances of 4'33\", you will need to go to Settings/Privacy & Security/Microphone\nand enable this app.")
             }
 
             
@@ -56,7 +56,7 @@ struct RecordPlayView: View {
             .padding([.bottom, .leading], 12.0)
             
             HStack {
-                if (viewModel.isRecording) {
+                if (viewModel.piece_recording) {
                     recordButtonView(name: "Stop", image:"stop_wht-512", action:viewModel.stopRecording)
                 } else {
                     recordButtonView(name: "Record", image:"record_wht_red-512", action:viewModel.startRecording)
@@ -64,7 +64,7 @@ struct RecordPlayView: View {
                 
                 recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback)
     
-                if (viewModel.isPlaying) {
+                if (viewModel.piece_playing) {
                     recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.stopPlaying)
                 } else {
                     recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.startPlaying)

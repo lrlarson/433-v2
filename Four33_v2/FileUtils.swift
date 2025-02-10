@@ -58,15 +58,22 @@ enum FileUtils {
     }
         
     static func getCurrentRecordingURL() -> URL {
-        return getTmpDirURL().appending(path: currentRecordingDirectory)
+        // Change back to this after development:
+        //return getTmpDirURL().appending(path: currentRecordingDirectory)
+        
+        // During development, do temp work in user folder so it can be seen
+        return getDocumentsDirURL().appending(path: currentRecordingDirectory)
     }
         
-    static func createRecordingDir(url:URL) -> Bool {
-        do {
-            try fileManager.createDirectory(at: url, withIntermediateDirectories: false)
-        } catch {
-            print("Error attempting to create temp. recording directory.")
-            return false
+    static func createRecordingDir() -> Bool {
+        if (!fileManager.fileExists(atPath: getCurrentRecordingURL().path)) {
+            do {
+                try fileManager.createDirectory(at: getCurrentRecordingURL(), withIntermediateDirectories: false)
+            } catch {
+                print("Error attempting to create temp. recording directory.")
+                return false
+            }
+            return true
         }
         return true
     }

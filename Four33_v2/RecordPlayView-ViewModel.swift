@@ -22,8 +22,18 @@ extension RecordPlayView {
         var move3prog:CGFloat = 0.0
         var elapsedTime = ""
         var intermissionTime = ""
-        var isRecording = false
-        var isPlaying = false
+        
+        var audioSessionDenied = false
+        var playbackWasInterrupted = false
+        var recordingWasInterrupted = false
+        var resignedActiveDuringRecording = false
+        var playbackWasPaused = false
+        var piece_recording = false
+        var piece_playing = false
+        var piece_paused = false
+        var inMovement = false
+        var currentPlayMovement:Int = 0
+
         
         var displayPermissionAlert = false
         
@@ -34,7 +44,12 @@ extension RecordPlayView {
                                     mv3dur: appConstants.MVIII_DURATION,
                                     interMvDur: appConstants.INTER_MOVEMENT_DURATION,
                                     deleg:self)
-            checkMicAuth()
+            let _ = checkMicAuth()
+            
+            // Create temp recording directory, if necessary
+            if (!FileUtils.createRecordingDir()) {
+                print("Error: couldn't create temp recording directory.")
+            }
         }
         
         func pieceTimerUpdate(eventType: timerEvent, newVal: Double) {
@@ -102,7 +117,6 @@ extension RecordPlayView {
         }
         
         func startPieceTimer() {
-            initAllDisplay()
             pieceTimer!.startTimerWithQueueTime(queueTime: -1)
         }
         
@@ -110,29 +124,40 @@ extension RecordPlayView {
             // If microphone permission is not given, warn user
             if (checkMicAuth())
             {
-                isRecording = true
+                let audioSession = AVAudioSession.sharedInstance()
+                do {
+                    try audioSession.setCategory(.playAndRecord, mode: .default)
+                    try audioSession.setActive(true)
+                } catch {
+                    print("Failed to set audio session category: \(error)")
+                }
+
+                resetPieceToStart()
                 startPieceTimer()
+                piece_recording = true
+                recordMovement(movement: "One")
             }
         }
         
         func stopRecording() {
-            isRecording = false
+            piece_recording = false
             killPieceTimer()
+            audioRecorder?.stop()
         }
         
         func startPlaying() {
-            isPlaying = true
+            piece_playing = true
             //startPieceTimer()
         }
         
         func stopPlaying() {
-            isPlaying = false
+            piece_playing = false
         }
         
         func resetRecordPlayback() {
             killPieceTimer()
-            isRecording = false;
-            isPlaying = false;
+            piece_recording = false;
+            piece_playing = false;
         }
         
         func initAllDisplay() {
@@ -143,5 +168,50 @@ extension RecordPlayView {
             move2prog = 0.0
             move3prog = 0.0
         }
+        
+        func resetPieceToStart() {
+            initAllDisplay()
+            currentPlayMovement = 0
+            inMovement = false
+            piece_paused = false
+            //[prog_intermission setText: @""]
+            //[piece_time setText: @""]
+            //[paused_status setText: @""]
+            //[pieceTimer resetTimer]
+            playbackWasPaused = false
+            //recordingNeedsSaving = false
+            //secondsLeftInMovement = 999999
+        }
+
+
+        func recordMovement(movement:String)
+        {
+            let url = FileUtils.buildFullTempURL(movement:movement)
+            // Start the recorder, audio file type: WAV (kAudioFileWAVEType)
+            let recordSettings: [String : Any] = [AVFormatIDKey: Int(kAudioFormatLinearPCM),
+                                                AVSampleRateKey: 44100.0,
+                                          AVNumberOfChannelsKey: 1,
+                                       AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue ]
+            
+            do {
+                audioRecorder = try AVAudioRecorder(url: url, settings: recordSettings)
+                audioRecorder?.prepareToRecord()
+                audioRecorder?.record()
+            } catch {
+                print("Error creating audio Recorder. \(error)")
+            }
+            
+            // Hook the level meter up to the Audio Queue for the recorder
+            //[lvlMeter_in setAq: recorder->Queue()];
+                
+            //[self setFileDescriptionForFormat:recorder->DataFormat() withName:path];
+            
+        // USED TO THINK THIS WAS NECESSARY, BUT IT'S NOT:
+        //    // Wait a half second, then start the timer with accurate queue time
+        //    [self performSelector:@selector(startRecordTimer) withObject:nil afterDelay:0.001];
+            //[self startRecordTimer];
+        }
+
+
     }
 }
