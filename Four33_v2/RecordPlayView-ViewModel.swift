@@ -72,25 +72,31 @@ extension RecordPlayView {
             case .movementOneEnd:
                 if (piece_recording) {
                     stopRecording()
+                } else if (piece_playing) {
+                    stopPlaying()
                 }
             case .movementTwoStart:
                 intermissionTime = ""
                 if (piece_recording) {
                     recordMovement(movement: "Two")
+                } else if (piece_playing) {
+                    playMovement(movement: "Two")
                 }
             case .movementTwoEnd:
                 if (piece_recording) {
                     stopRecording()
+                } else if (piece_playing) {
+                    stopPlaying()
                 }
             case .movementThreeStart:
                 intermissionTime = ""
                 if (piece_recording) {
                     recordMovement(movement: "Three")
+                } else if (piece_playing) {
+                    playMovement(movement: "Three")
                 }
             case .pieceCompleted:
-                if (piece_recording) {
-                    endPerformance(recordingIsComplete:true)
-                }
+                endPerformance(recordingIsComplete:true)
                 intermissionTime = "Complete."
            }
         }
@@ -151,15 +157,20 @@ extension RecordPlayView {
         func stopRecording() {
             stopAudioMetering()
             audioRecorder?.stop()
+            audioRecorder = nil
         }
         
         func startPlaying() {
+            resetPieceToStart()
+            startPieceTimer()
             piece_playing = true
-            //startPieceTimer()
+            playMovement(movement: "One")
         }
         
         func stopPlaying() {
-            piece_playing = false
+            stopAudioMetering()
+            audioPlayer?.stop()
+            audioPlayer = nil
         }
         
         func resetRecordPlayback() {
@@ -218,6 +229,23 @@ extension RecordPlayView {
         //    [self performSelector:@selector(startRecordTimer) withObject:nil afterDelay:0.001];
             //[self startRecordTimer];
         }
+        
+        
+        func playMovement(movement:String)
+        {
+            //[self disableAutoLock];
+            // create a new queue for the given movement
+            let url = FileUtils.buildFullTempURL(movement:movement)
+
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.isMeteringEnabled = true
+                startAudioMetering()
+                audioPlayer?.play()
+            } catch {
+                print("Error creating audio Recorder. \(error)")
+            }
+        }
 
         func startAudioMetering() {
             // Refresh audio meter at 10 hz.
@@ -234,10 +262,16 @@ extension RecordPlayView {
         }
 
         func updateAudioMeter() {   //called by timer
-            // audioRecorder being your instance of AVAudioRecorder
-            audioRecorder?.updateMeters()
-            let decibels = audioRecorder?.averagePower(forChannel:0)
-            meterLevel = pow(10, Double(decibels! / 20.0))
+            var decibels:Float = -160.0
+            
+            if (piece_recording) {
+                audioRecorder?.updateMeters()
+                decibels = (audioRecorder?.averagePower(forChannel:0))!
+            } else if (piece_playing) {
+                audioPlayer?.updateMeters()
+                decibels = (audioPlayer?.averagePower(forChannel:0))!
+            }
+            meterLevel = pow(10, Double(decibels / 20.0))
         }
         
         func endPerformance(recordingIsComplete:Bool) {
