@@ -99,6 +99,16 @@ enum FileUtils {
         return String(format:"%@%@", "Movement", movement)
     }
     
+    static func deleteMovement(movement:String) {
+        let url = buildFullTempURL(movement:movement)
+        if (fileManager.fileExists(atPath: url.path)) {
+            do {
+                try fileManager.removeItem(at: url)
+            } catch {
+                print("Error deleting movement.")
+            }
+        }
+    }
     
     /* Formerly:
      - (NSString *) buildRecordPathWithMovementName: (NSString *)movement

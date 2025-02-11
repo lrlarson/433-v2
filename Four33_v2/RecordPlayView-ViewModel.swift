@@ -70,15 +70,28 @@ extension RecordPlayView {
                 let itime = Int(round(newVal))
                 intermissionTime = "Break: " + String(format:"%1d:%02d", itime / 60, itime % 60)
             case .movementOneEnd:
-                print ("movement one end")
+                if (piece_recording) {
+                    stopRecording()
+                }
             case .movementTwoStart:
                 intermissionTime = ""
+                if (piece_recording) {
+                    recordMovement(movement: "Two")
+                }
             case .movementTwoEnd:
-                print ("movement two end")
+                if (piece_recording) {
+                    stopRecording()
+                }
             case .movementThreeStart:
                 intermissionTime = ""
+                if (piece_recording) {
+                    recordMovement(movement: "Three")
+                }
             case .movementThreeEnd:
-                print ("movement three end")
+                if (piece_recording) {
+                    endPerformance(recordingIsComplete:true)
+                }
+                intermissionTime = "Complete."
             case .pieceCompleted:
                 if (pieceTimer != nil)
                 {
@@ -137,12 +150,12 @@ extension RecordPlayView {
                 startPieceTimer()
                 piece_recording = true
                 recordMovement(movement: "One")
+                FileUtils.deleteMovement(movement: "Two")
+                FileUtils.deleteMovement(movement: "Three")
             }
         }
         
         func stopRecording() {
-            piece_recording = false
-            killPieceTimer()
             audioRecorder?.stop()
             stopAudioMetering()
         }
@@ -205,9 +218,6 @@ extension RecordPlayView {
                 print("Error creating audio Recorder. \(error)")
             }
             
-            // Hook the level meter up to the Audio Queue for the recorder
-            //[lvlMeter_in setAq: recorder->Queue()];
-                
             //[self setFileDescriptionForFormat:recorder->DataFormat() withName:path];
             
         // USED TO THINK THIS WAS NECESSARY, BUT IT'S NOT:
@@ -235,6 +245,31 @@ extension RecordPlayView {
             audioRecorder?.updateMeters()
             let decibels = audioRecorder?.averagePower(forChannel:0)
             meterLevel = pow(10, Double(decibels! / 20.0))
+        }
+        
+        func endPerformance(recordingIsComplete:Bool) {
+            killPieceTimer()
+            if (piece_recording) {
+                stopRecording()
+                piece_recording = false
+                //[self setRecordButtonStateToRecord];
+                //[self enablePlayButton];
+                //[(FourThirtyThreeAppDelegate *)[[UIApplication sharedApplication] delegate] setPlaybackCategory];
+                //[(FourThirtyThreeAppDelegate *)[[UIApplication sharedApplication] delegate] setCurrentlyRecording:NO];
+            } else if (piece_playing) {
+                stopPlaying()
+                //[self setPlayButtonStateToPlay];
+                //btn_record.enabled = YES;
+                piece_playing = false
+                currentPlayMovement = 0
+                inMovement = false
+            }
+            // Set a 30 second timer, to delay the inevitable autolock until user has time to see screen
+            //[self reenableAutoLockInSecs:[NSNumber numberWithDouble:30.0]];
+            if (recordingIsComplete) {
+                //saveRecording();
+            }
+
         }
     }
 }
