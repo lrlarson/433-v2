@@ -87,19 +87,12 @@ extension RecordPlayView {
                 if (piece_recording) {
                     recordMovement(movement: "Three")
                 }
-            case .movementThreeEnd:
+            case .pieceCompleted:
                 if (piece_recording) {
                     endPerformance(recordingIsComplete:true)
                 }
                 intermissionTime = "Complete."
-            case .pieceCompleted:
-                if (pieceTimer != nil)
-                {
-                    // This *may* get replaced by recording/playback ending.
-                    pieceTimer!.killTimer()
-                }
-                intermissionTime = "Complete."
-            }
+           }
         }
         
         // Check privacy authorizaton for this app to use the microphone.
@@ -156,8 +149,8 @@ extension RecordPlayView {
         }
         
         func stopRecording() {
-            audioRecorder?.stop()
             stopAudioMetering()
+            audioRecorder?.stop()
         }
         
         func startPlaying() {

@@ -22,7 +22,6 @@ enum timerEvent {
     case movementTwoStart
     case movementTwoEnd
     case movementThreeStart
-    case movementThreeEnd
     case pieceCompleted
 }
 
