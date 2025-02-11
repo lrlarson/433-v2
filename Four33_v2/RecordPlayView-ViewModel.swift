@@ -12,11 +12,12 @@ import UIKit
 extension RecordPlayView {
     @Observable class ViewModel: PieceTimerDelegate {
         private var pieceTimer:PieceTimer?
+        private var meterTimer:Timer? = nil
         private var audioPlayer:AVAudioPlayer?
         private var audioRecorder:AVAudioRecorder?
         private var secondsLeftInMovemnt = 0
         
-        var levelOne: Double = 0.9
+        var meterLevel: Double = 0.0      // Audio meter
         var move1prog:CGFloat = 0.0
         var move2prog:CGFloat = 0.0
         var move3prog:CGFloat = 0.0
@@ -143,6 +144,7 @@ extension RecordPlayView {
             piece_recording = false
             killPieceTimer()
             audioRecorder?.stop()
+            stopAudioMetering()
         }
         
         func startPlaying() {
@@ -163,7 +165,7 @@ extension RecordPlayView {
         func initAllDisplay() {
             elapsedTime = ""
             intermissionTime = ""
-            levelOne = 0.0
+            meterLevel = 0.0
             move1prog = 0.0
             move2prog = 0.0
             move3prog = 0.0
@@ -196,6 +198,8 @@ extension RecordPlayView {
             do {
                 audioRecorder = try AVAudioRecorder(url: url, settings: recordSettings)
                 audioRecorder?.prepareToRecord()
+                audioRecorder?.isMeteringEnabled = true
+                startAudioMetering()
                 audioRecorder?.record()
             } catch {
                 print("Error creating audio Recorder. \(error)")
@@ -212,6 +216,25 @@ extension RecordPlayView {
             //[self startRecordTimer];
         }
 
+        func startAudioMetering() {
+            // Refresh audio meter at 10 hz.
+            meterTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { newTimer in
+                self.updateAudioMeter()
+            }
+        }
 
+        func stopAudioMetering() {
+            if meterTimer != nil {
+                meterTimer!.invalidate()
+            }
+            meterLevel = 0.0
+        }
+
+        func updateAudioMeter() {   //called by timer
+            // audioRecorder being your instance of AVAudioRecorder
+            audioRecorder?.updateMeters()
+            let decibels = audioRecorder?.averagePower(forChannel:0)
+            meterLevel = pow(10, Double(decibels! / 20.0))
+        }
     }
 }

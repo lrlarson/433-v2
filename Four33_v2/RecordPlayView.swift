@@ -29,7 +29,7 @@ struct RecordPlayView: View {
                     Spacer()
                 }
                 HStack {
-                    AudioView(level: viewModel.levelOne, numCells: numCells, colors: colors)
+                    AudioView(level: viewModel.meterLevel, numCells: numCells, colors: colors)
                         .frame(minWidth: 30, idealWidth: 60, maxWidth: 60, minHeight: 1, idealHeight: CGFloat(18 * numCells), maxHeight: CGFloat(18 * numCells), alignment: .center)
                 }
                 VStack {
