@@ -48,7 +48,7 @@ extension RecordPlayView {
             let _ = checkMicAuth()
             
             // Create temp recording directory, if necessary
-            if (!FileUtils.createRecordingDir()) {
+            if (!Storage.createRecordingDir()) {
                 print("Error: couldn't create temp recording directory.")
             }
         }
@@ -149,8 +149,8 @@ extension RecordPlayView {
                 startPieceTimer()
                 piece_recording = true
                 recordMovement(movement: "One")
-                FileUtils.deleteMovement(movement: "Two")
-                FileUtils.deleteMovement(movement: "Three")
+                Storage.deleteMovement(movement: "Two")
+                Storage.deleteMovement(movement: "Three")
             }
         }
         
@@ -205,7 +205,7 @@ extension RecordPlayView {
 
         func recordMovement(movement:String)
         {
-            let url = FileUtils.buildFullTempURL(movement:movement)
+            let url = Storage.buildFullTempURL(movement:movement)
             // Start the recorder, audio file type: WAV (kAudioFileWAVEType)
             let recordSettings: [String : Any] = [AVFormatIDKey: Int(kAudioFormatLinearPCM),
                                                 AVSampleRateKey: 44100.0,
@@ -235,7 +235,7 @@ extension RecordPlayView {
         {
             //[self disableAutoLock];
             // create a new queue for the given movement
-            let url = FileUtils.buildFullTempURL(movement:movement)
+            let url = Storage.buildFullTempURL(movement:movement)
 
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
@@ -279,14 +279,8 @@ extension RecordPlayView {
             if (piece_recording) {
                 stopRecording()
                 piece_recording = false
-                //[self setRecordButtonStateToRecord];
-                //[self enablePlayButton];
-                //[(FourThirtyThreeAppDelegate *)[[UIApplication sharedApplication] delegate] setPlaybackCategory];
-                //[(FourThirtyThreeAppDelegate *)[[UIApplication sharedApplication] delegate] setCurrentlyRecording:NO];
             } else if (piece_playing) {
                 stopPlaying()
-                //[self setPlayButtonStateToPlay];
-                //btn_record.enabled = YES;
                 piece_playing = false
                 currentPlayMovement = 0
                 inMovement = false
@@ -294,7 +288,7 @@ extension RecordPlayView {
             // Set a 30 second timer, to delay the inevitable autolock until user has time to see screen
             //[self reenableAutoLockInSecs:[NSNumber numberWithDouble:30.0]];
             if (recordingIsComplete) {
-                //saveRecording();
+                //saveRecording()
             }
 
         }

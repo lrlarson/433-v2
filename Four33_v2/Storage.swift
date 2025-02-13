@@ -1,5 +1,5 @@
 //
-//  FileUtils.swift
+//  Storage.swift
 //  Four33_v2
 //
 //  Created by PKSTONE on 12/10/24.
@@ -8,7 +8,7 @@
 import Foundation
 
 // Caseless enum
-enum FileUtils {
+enum Storage {
     
     static let currentRecordingDirectory = "__current__"
     static let movementNames = ["One", "Two", "Three"]
@@ -58,11 +58,11 @@ enum FileUtils {
     }
         
     static func getCurrentRecordingURL() -> URL {
-        // Change back to this after development:
-        //return getTmpDirURL().appending(path: currentRecordingDirectory)
+        // Do recording and playback in temp directory
+        return getTmpDirURL().appending(path: currentRecordingDirectory)
         
         // During development, do temp work in user folder so it can be seen
-        return getDocumentsDirURL().appending(path: currentRecordingDirectory)
+        //return getDocumentsDirURL().appending(path: currentRecordingDirectory)
     }
         
     static func createRecordingDir() -> Bool {
@@ -77,6 +77,87 @@ enum FileUtils {
         }
         return true
     }
+    
+    // Save the current recording atomically (as possible)*:
+    //  First, copy the current recording & metadata to the temp directory;
+    //   then, edit the (temp) metadata to reflect the new recording name;
+    //   finally, move the (temp) recording to the Docs directory.
+    //
+    //   * Even more finally (this is the part that is not completely atomic), notify the
+    //   RecordPlayController to update the current recording's name. In the worst case,
+    //   a save interrupted just at this point might mean the displayed recording name
+    //   is not updated properly.
+    func saveRecording(name:String)
+    {
+        // Check if a recording of this name already exists
+        let newRecordingURL = Storage.getDocumentsDirURL().appending(path: name, directoryHint: .isDirectory)
+        //let tempRecordingPath = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+        
+        if (Storage.fileManager.fileExists(atPath: newRecordingURL.path)) {
+        }
+        
+        if ([[NSFileManager defaultManager] fileExistsAtPath:docsRecordingPath])
+        {
+            [self saveFailedWithReason:@"duplicate name"];
+            return;
+        }
+        
+        // We have a valid recording name:
+        
+        // Copy current recording to new folder of that name inside temp directory
+        NSError *error;
+        if (![[NSFileManager defaultManager] createDirectoryAtPath:tempRecordingPath
+                                       withIntermediateDirectories:NO
+                                                        attributes:nil
+                                                             error:&error])
+        {
+            [self saveFailedWithReason:@"create directory failed"];
+            return;
+        }
+        // Copy all three movements
+        NSString *fromFile, *newFile;
+        NSFileManager *fileMgr = [NSFileManager defaultManager];
+        for (NSString *mname in [fileUtils movementNames]) {
+            fromFile = [fileUtils buildRecordPathWithMovementName:mname];
+            if ([fileMgr fileExistsAtPath:fromFile]) {
+                newFile = [tempRecordingPath stringByAppendingPathComponent:[fileUtils getMovementFileName:mname]];
+                if (![fileMgr copyItemAtPath:fromFile toPath:newFile error:&error]) {
+                    [self saveFailedWithReason:@"file copy failed"];
+                    return;
+                }
+            }
+        }
+        
+        // Load, then edit metadata to update recording title, then save it to temp recording directory
+        NSMutableDictionary *metadata = [fileUtils readMetaDataFromPath:
+                                         [fileUtils getCurrentRecordingDirFullPath]];
+        [metadata setValue:name forKey:@"title"];
+        [fileUtils writeMetadataToPath:tempRecordingPath WithDictionary:metadata];
+        
+        // Finally, move temp recording directory into documents
+        // (Any interruption up to this point will leave the recording intact but unsaved)
+        if (![fileMgr moveItemAtPath:tempRecordingPath toPath:docsRecordingPath error:&error]) {
+            // Error while moving recording to docs directory
+            [self saveFailedWithReason:@"file move failed"];
+            return;
+        }
+        
+        // Delete recording from temp directory
+        [fileMgr removeItemAtPath:tempRecordingPath error:nil];
+        
+        // Send "saveSucceeded" event, including saved title
+        NSMutableDictionary *extraInfo = [[NSMutableDictionary alloc] init];
+        NSString *recordingTitle = name;
+        [extraInfo setObject:recordingTitle forKey:@"recordingTitle"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"saveSucceeded"
+                                                                object:self
+                                                              userInfo:extraInfo];
+        });
+        [self refreshSavedRecordingsArray];
+    }
+
+
     
     
     /* Formerly:
@@ -188,13 +269,13 @@ enum FileUtils {
 }
 
 
-func copyFilesFromBundleToDocumentsFolderWith(fileExtension: String) {
+func copyStorageFromBundleToDocumentsFolderWith(fileExtension: String) {
     if let resPath = Bundle.main.resourcePath {
         do {
             let dirContents = try FileManager.default.contentsOfDirectory(atPath: resPath)
             let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            let filteredFiles = dirContents.filter{ $0.contains(fileExtension)}
-            for fileName in filteredFiles {
+            let filteredStorage = dirContents.filter{ $0.contains(fileExtension)}
+            for fileName in filteredStorage {
                 if let documentsURL = documentsURL {
                     let sourceURL = Bundle.main.bundleURL.appendingPathComponent(fileName)
                     let destURL = documentsURL.appendingPathComponent(fileName)
