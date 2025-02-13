@@ -37,7 +37,7 @@ struct appConstants {
     static let CAGE_TVM_URL = "cagetvm2.elasticbeanstalk.com"
 
     static let CAGE_METADATA_UP_JSON = "app/cageJSON.cfc"
-    static let CAGE_JSON_URL = "http://johncage.org/cageJSON.cfc"
+    static let CAGE_JSON_URL = "https://johncage.org/cageJSON.cfc"
     static let CAGE_JSON_PARM_PREFIX_WHOLE_WORLD = "?method=getUploadedRecordings2&returnFormat=JSON"
     static let CAGE_JSON_PARM_PREFIX_FILTERED = "?method=getUploadedRecordings3&returnFormat=JSON"
 
