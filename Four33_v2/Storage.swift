@@ -96,6 +96,7 @@ enum Storage {
         if (Storage.fileManager.fileExists(atPath: newRecordingURL.path)) {
         }
         
+        /*
         if ([[NSFileManager defaultManager] fileExistsAtPath:docsRecordingPath])
         {
             [self saveFailedWithReason:@"duplicate name"];
@@ -155,6 +156,7 @@ enum Storage {
                                                               userInfo:extraInfo];
         });
         [self refreshSavedRecordingsArray];
+         */
     }
 
 
