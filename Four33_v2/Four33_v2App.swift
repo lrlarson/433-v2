@@ -12,31 +12,39 @@ struct Four33_v2App: App {
     @Environment(\.scenePhase) private var scenePhase
     
     init() {
-//        let screet = Storage.buildFullTempURL(movement: "Two")
+//        let screet = Files.buildFullTempURL(movement: "Two")
 //        print("buildFullTempURL test: ", screet)
 //        
-//        let grook = Storage.buildFullDocsURL(recordingName: "Ploobis", movement: "Two")
+//        let grook = Files.buildFullDocsURL(recordingName: "Ploobis", movement: "Two")
 //        print("buildFullDocsURL test: ", grook)
         
 //        var url = Bundle.main.url(forResource:"metadata", withExtension: nil, subdirectory: "Seed_Recording")
-//        var md = Storage.readMetaDataFromURL(url: url!)
+//        var md = Files.readMetaDataFromURL(url: url!)
 //        md!.title = "Ultracrepidarian Fudgel"
 //        
 //        // Test: write metadata to outer docs folder
-//        let testurl:URL = Storage.getDocumentsDirURL()
+//        let testurl:URL = Files.getDocumentsDirURL()
 //            .appending(path: "Grelgus", directoryHint: URL.DirectoryHint.isDirectory)
 //        if (!FileManager.default.fileExists(atPath: testurl.path))
 //        {
-//            let success = Storage.createRecordingDir(url: testurl)
+//            let success = Files.createRecordingDir(url: testurl)
 //            print("Directory creation success: ", success)
 //        }
 //        
-//        url = Storage.getDocumentsDirURL()
+//        url = Files.getDocumentsDirURL()
 //                .appending(path: "Grelgus", directoryHint: URL.DirectoryHint.isDirectory )
 //                .appending(path:"metadata", directoryHint: URL.DirectoryHint.notDirectory)
 //        print("Metadata write test URL: ", url!.absoluteString)
-//        let success = Storage.writeMetadataToURL(url:url!, metadata: md!)
+//        let success = Files.writeMetadataToURL(url:url!, metadata: md!)
 //        print ("Metadata write success: ", success)
+        
+        // Save recording testing
+        do {
+            try Files.saveRecording(name:"testx")
+        } catch {
+            print ("(Test in App init: Save recording error: ", error)
+        }
+
     }
     var body: some Scene {
         WindowGroup {

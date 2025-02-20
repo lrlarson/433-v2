@@ -9,6 +9,8 @@ import Foundation
 import AVFoundation
 import UIKit
 
+
+
 extension RecordPlayView {
     @Observable class ViewModel: PieceTimerDelegate {
         private var pieceTimer:PieceTimer?
@@ -47,9 +49,20 @@ extension RecordPlayView {
                                     deleg:self)
             let _ = checkMicAuth()
             
-            // Create temp recording directory, if necessary
-            if (!Storage.createRecordingDir()) {
+            // Create current recording directory, if necessary
+            do {
+                try Files.createRecordingDir(pieceName: Files.currentRecordingDirectory)
+            } catch {
                 print("Error: couldn't create temp recording directory.")
+            }
+            // Create default metadata
+            do {
+                try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
+                                             metadata: {Files.RecordingMetaData(created:"",
+                                                                                geohash:appConstants.LOCATION_NOT_RECORDED,
+                                                                                title:"")}())
+            } catch {
+                print("Couldn't create initial metadata.", error)
             }
         }
         
@@ -149,8 +162,8 @@ extension RecordPlayView {
                 startPieceTimer()
                 piece_recording = true
                 recordMovement(movement: "One")
-                Storage.deleteMovement(movement: "Two")
-                Storage.deleteMovement(movement: "Three")
+                Files.deleteMovement(movement: "Two")
+                Files.deleteMovement(movement: "Three")
             }
         }
         
@@ -205,7 +218,7 @@ extension RecordPlayView {
 
         func recordMovement(movement:String)
         {
-            let url = Storage.buildFullTempURL(movement:movement)
+            let url = Files.currentRecordingMovementURL(movement:movement)
             // Start the recorder, audio file type: WAV (kAudioFileWAVEType)
             let recordSettings: [String : Any] = [AVFormatIDKey: Int(kAudioFormatLinearPCM),
                                                 AVSampleRateKey: 44100.0,
@@ -235,7 +248,7 @@ extension RecordPlayView {
         {
             //[self disableAutoLock];
             // create a new queue for the given movement
-            let url = Storage.buildFullTempURL(movement:movement)
+            let url = Files.currentRecordingMovementURL(movement:movement)
 
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
@@ -288,9 +301,14 @@ extension RecordPlayView {
             // Set a 30 second timer, to delay the inevitable autolock until user has time to see screen
             //[self reenableAutoLockInSecs:[NSNumber numberWithDouble:30.0]];
             if (recordingIsComplete) {
-                //saveRecording()
+                do {
+                    try Files.saveRecording(name:"testx")
+                } catch {
+                    switch error {
+                    default: print ("Save recording error: ", error)
+                    }
+                }
             }
-
         }
     }
 }

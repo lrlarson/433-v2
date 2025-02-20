@@ -1,5 +1,5 @@
 //
-//  Storage.swift
+//  Files.swift
 //  Four33_v2
 //
 //  Created by PKSTONE on 12/10/24.
@@ -8,55 +8,65 @@
 import Foundation
 
 // Caseless enum
-enum Storage {
+enum Files {
     
     static let currentRecordingDirectory = "__current__"
     static let movementNames = ["One", "Two", "Three"]
     static let metadataFilename = "metadata"
     static let audioFileFormatExtension = appConstants.WAV_FORMAT_EXTENSION
     
+    enum FilesError: Error {
+        case duplicateName
+        case createDirectoryFailed
+        case deleteFailed
+        case getContentsFailed
+        case fileNotExists
+        case fileCopyFailed
+        case fileSaveError
+        case cleanupError
+        case noMetaDataFound
+        case metaDataSaveFailed
+    }
+    
     static let fileManager = FileManager.default
     
-    static func clearTempDirectory() -> Bool {
+    static func clearTempDirectory() throws (FilesError) {
         var directoryContents: [URL]
         let tempDir:URL = getTmpDirURL()
         do {
             directoryContents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
         } catch {
-            print("Error getting contents of temp directory.")
-            return false
+            print ("ClearTempDirectory get dir. contents failed.")
+            throw .getContentsFailed
         }
         for t_url in directoryContents {
             let newURL:URL = tempDir.appending(path:t_url.path())
             do {
                 try fileManager.removeItem(at:newURL)
             } catch {
-                print("Error while deleting items from temp directory.")
-                return false
+                print ("ClearTempDirectory delete file failed.")
+                throw .deleteFailed
             }
         }
-        return true
     }
-     
     
-    static func deleteFile(path:String) -> Bool {
+    
+    static func deleteFile(path:String) throws (FilesError) {
         do {
             try fileManager.removeItem(atPath: path)
         } catch {
-            print("Error attempting to delete file '", path, "'.")
-            return false
+            throw .deleteFailed
         }
-        return true
     }
     
     static func getDocumentsDirURL() -> URL {
         return  fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
-
+    
     static func getTmpDirURL() -> URL {
         return  fileManager.temporaryDirectory
     }
-        
+    
     static func getCurrentRecordingURL() -> URL {
         // Do recording and playback in temp directory
         return getTmpDirURL().appending(path: currentRecordingDirectory)
@@ -64,18 +74,19 @@ enum Storage {
         // During development, do temp work in user folder so it can be seen
         //return getDocumentsDirURL().appending(path: currentRecordingDirectory)
     }
-        
-    static func createRecordingDir() -> Bool {
-        if (!fileManager.fileExists(atPath: getCurrentRecordingURL().path)) {
+    
+    static func createRecordingDir(pieceName:String) throws (FilesError)
+    {
+        print ("new recording name: ", pieceName)
+        let piece_dir = getTmpDirURL().appending(path: pieceName)
+        print ("piece_dir = ", piece_dir)
+        if (!fileManager.fileExists(atPath: piece_dir.path())) {
             do {
-                try fileManager.createDirectory(at: getCurrentRecordingURL(), withIntermediateDirectories: false)
+                try fileManager.createDirectory(at: piece_dir, withIntermediateDirectories: true)
             } catch {
-                print("Error attempting to create temp. recording directory.")
-                return false
+                throw .createDirectoryFailed
             }
-            return true
         }
-        return true
     }
     
     // Save the current recording atomically (as possible)*:
@@ -87,65 +98,69 @@ enum Storage {
     //   RecordPlayController to update the current recording's name. In the worst case,
     //   a save interrupted just at this point might mean the displayed recording name
     //   is not updated properly.
-    func saveRecording(name:String)
+    static func saveRecording(name:String) throws (FilesError)
     {
         // Check if a recording of this name already exists
-        let newRecordingURL = Storage.getDocumentsDirURL().appending(path: name, directoryHint: .isDirectory)
-        //let tempRecordingPath = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
-        
-        if (Storage.fileManager.fileExists(atPath: newRecordingURL.path)) {
-        }
-        
-        /*
-        if ([[NSFileManager defaultManager] fileExistsAtPath:docsRecordingPath])
-        {
-            [self saveFailedWithReason:@"duplicate name"];
-            return;
+        var isDir: ObjCBool = ObjCBool(true)
+        let newRecordingURL = getDocumentsDirURL().appending(path: name, directoryHint: .isDirectory)
+        guard !(fileManager.fileExists(atPath: newRecordingURL.path, isDirectory: &isDir) && isDir.boolValue) else {
+            throw .duplicateName
         }
         
         // We have a valid recording name:
-        
         // Copy current recording to new folder of that name inside temp directory
-        NSError *error;
-        if (![[NSFileManager defaultManager] createDirectoryAtPath:tempRecordingPath
-                                       withIntermediateDirectories:NO
-                                                        attributes:nil
-                                                             error:&error])
-        {
-            [self saveFailedWithReason:@"create directory failed"];
-            return;
+        do {
+            try createRecordingDir(pieceName: name)
+        } catch .createDirectoryFailed {
+            throw .createDirectoryFailed
         }
+        
+        // Cleanup the temporary copy of the piece (made above) at end of scope
+        defer {
+            do {
+                try fileManager.removeItem(at: getTmpDirURL().appending(path: name))
+            } catch {
+                print ("Error during temp. directory cleanup.")
+            }
+        }
+
         // Copy all three movements
-        NSString *fromFile, *newFile;
-        NSFileManager *fileMgr = [NSFileManager defaultManager];
-        for (NSString *mname in [fileUtils movementNames]) {
-            fromFile = [fileUtils buildRecordPathWithMovementName:mname];
-            if ([fileMgr fileExistsAtPath:fromFile]) {
-                newFile = [tempRecordingPath stringByAppendingPathComponent:[fileUtils getMovementFileName:mname]];
-                if (![fileMgr copyItemAtPath:fromFile toPath:newFile error:&error]) {
-                    [self saveFailedWithReason:@"file copy failed"];
-                    return;
-                }
+        for mname in movementNames {
+            let tmp_url = getTmpDirURL().appending(path: name).appending(path: getMovementFileName(movement: mname))
+            let from_url = currentRecordingMovementURL(movement: mname)
+            guard fileManager.fileExists(atPath: from_url.path()) else {
+                throw .fileNotExists
+            }
+            do {
+                try fileManager.copyItem(at: from_url, to: tmp_url)
+            } catch {
+                print (error)
+                throw .fileCopyFailed
             }
         }
         
         // Load, then edit metadata to update recording title, then save it to temp recording directory
-        NSMutableDictionary *metadata = [fileUtils readMetaDataFromPath:
-                                         [fileUtils getCurrentRecordingDirFullPath]];
-        [metadata setValue:name forKey:@"title"];
-        [fileUtils writeMetadataToPath:tempRecordingPath WithDictionary:metadata];
+        var metadata = readMetaDataFromURL(url: getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename))
+        guard metadata != nil else {
+            throw .noMetaDataFound
+        }
+        metadata!.title = name
+        do {
+            try writeMetadataToURL(url: getTmpDirURL().appending(path: name).appending(path:Files.metadataFilename), metadata: metadata!)
+        } catch {
+            throw .metaDataSaveFailed
+        }
         
         // Finally, move temp recording directory into documents
         // (Any interruption up to this point will leave the recording intact but unsaved)
-        if (![fileMgr moveItemAtPath:tempRecordingPath toPath:docsRecordingPath error:&error]) {
+        do {
+            try fileManager.moveItem(at: getTmpDirURL().appending(path: name), to: newRecordingURL)
+        } catch {
             // Error while moving recording to docs directory
-            [self saveFailedWithReason:@"file move failed"];
-            return;
+            throw .fileSaveError
         }
         
-        // Delete recording from temp directory
-        [fileMgr removeItemAtPath:tempRecordingPath error:nil];
-        
+        /*
         // Send "saveSucceeded" event, including saved title
         NSMutableDictionary *extraInfo = [[NSMutableDictionary alloc] init];
         NSString *recordingTitle = name;
@@ -155,24 +170,24 @@ enum Storage {
                                                                 object:self
                                                               userInfo:extraInfo];
         });
-        [self refreshSavedRecordingsArray];
-         */
+        //[self refreshSavedRecordingsArray];
+        */
     }
-
-
+    
+    
     
     
     /* Formerly:
      - (NSString *) buildFullPathFromOuterDirectory:
      
      Use buildFullDocsURL, below
+     
+     static func buildTempRecordingDirFileURL(recordingName:String,
+     filename:String) -> URL {
+     return getTmpDirectory().appending(path: recordingName, directoryHint: .isDirectory).appending(path: filename)
+     }
+     */
     
-    static func buildTempRecordingDirFileURL(recordingName:String,
-                                                filename:String) -> URL {
-        return getTmpDirectory().appending(path: recordingName, directoryHint: .isDirectory).appending(path: filename)
-    }
-    */
-
     
     static func getMovementFileName(movement:String) -> String {
         return String(format:"%@%@%@", "Movement", movement, appConstants.WAV_FORMAT_EXTENSION)
@@ -183,7 +198,7 @@ enum Storage {
     }
     
     static func deleteMovement(movement:String) {
-        let url = buildFullTempURL(movement:movement)
+        let url = currentRecordingMovementURL(movement:movement)
         if (fileManager.fileExists(atPath: url.path)) {
             do {
                 try fileManager.removeItem(at: url)
@@ -196,16 +211,16 @@ enum Storage {
     /* Formerly:
      - (NSString *) buildRecordPathWithMovementName: (NSString *)movement
      */
-    static func buildFullTempURL(movement:String) -> URL {
+    static func currentRecordingMovementURL(movement:String) -> URL {
         return getCurrentRecordingURL()
             .appending(path: getMovementFileName(movement: movement))
     }
     
-        
+    
     /* Formerly:
      - (NSString *) buildPathWithDocumentsSubDir
      Also replaces buildFullPathFromOuterDirectory
-    */
+     */
     static func buildFullDocsURL(recordingName:String, movement:String) -> URL {
         return getDocumentsDirURL()
             .appending(path: recordingName, directoryHint: .isDirectory)
@@ -223,7 +238,7 @@ enum Storage {
      
      url: path including the piece name and metadata filename
      */
-    static func writeMetadataToURL(url:URL, metadata:RecordingMetaData) -> Bool {
+    static func writeMetadataToURL(url:URL, metadata:RecordingMetaData) throws (FilesError) {
         do {
             let propEncoder = PropertyListEncoder()
             propEncoder.outputFormat = .xml
@@ -232,18 +247,17 @@ enum Storage {
         } catch {
             print("Error attempting to write recording metadata.")
             print(error);
-            return false
+            throw .fileSaveError
         }
-        return true
     }
     
     
     /* Formerly:
      - (NSMutableDictionary *)readMetaDataFromPath: (NSString *)path
-
+     
      url: path including the piece name and metadata filename
      */
-
+    
     static func readMetaDataFromURL(url:URL) -> RecordingMetaData? {
         do {
             let data = try Data(contentsOf: url)
@@ -254,36 +268,26 @@ enum Storage {
             return nil
         }
     }
-    
-
-       
-    /*
-     - (NSMutableDictionary *)readMetaDataFromFullPath:(NSString *)fullPath
-     {
-     NSMutableDictionary *metadata = [NSMutableDictionary dictionaryWithContentsOfFile:fullPath];
-     // Clean out obsolete metadata entries
-     [metadata removeObjectForKey:@"location"];
-     [metadata removeObjectForKey:@"recordist"];
-     return metadata;
-     }
-     
-     */
 }
 
 
-func copyStorageFromBundleToDocumentsFolderWith(fileExtension: String) {
-    if let resPath = Bundle.main.resourcePath {
-        do {
-            let dirContents = try FileManager.default.contentsOfDirectory(atPath: resPath)
-            let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            let filteredStorage = dirContents.filter{ $0.contains(fileExtension)}
-            for fileName in filteredStorage {
-                if let documentsURL = documentsURL {
-                    let sourceURL = Bundle.main.bundleURL.appendingPathComponent(fileName)
-                    let destURL = documentsURL.appendingPathComponent(fileName)
-                    do { try FileManager.default.copyItem(at: sourceURL, to: destURL) } catch { }
-                }
-            }
-        } catch { }
-    }
-}
+/*
+ // Used to copy the 'seed recording' from the app bundle to the documents directory
+ //  WAIT: shouldn't we be copying it to the temp directory in preparation for playing it?
+ static func copyFilesFromBundleToDocumentsFolderWith(fileExtension: String) {
+ if let resPath = Bundle.main.resourcePath {
+ do {
+ let dirContents = try FileManager.default.contentsOfDirectory(atPath: resPath)
+ let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+ let filteredFiles = dirContents.filter{ $0.contains(fileExtension)}
+ for fileName in filteredFiles {
+ if let documentsURL = documentsURL {
+ let sourceURL = Bundle.main.bundleURL.appendingPathComponent(fileName)
+ let destURL = documentsURL.appendingPathComponent(fileName)
+ do { try FileManager.default.copyItem(at: sourceURL, to: destURL) } catch { }
+ }
+ }
+ } catch { }
+ }
+ }
+ */
