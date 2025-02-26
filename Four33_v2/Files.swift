@@ -77,9 +77,7 @@ enum Files {
     
     static func createRecordingDir(pieceName:String) throws (FilesError)
     {
-        print ("new recording name: ", pieceName)
         let piece_dir = getTmpDirURL().appending(path: pieceName)
-        print ("piece_dir = ", piece_dir)
         if (!fileManager.fileExists(atPath: piece_dir.path())) {
             do {
                 try fileManager.createDirectory(at: piece_dir, withIntermediateDirectories: true)
@@ -156,7 +154,7 @@ enum Files {
         do {
             try fileManager.moveItem(at: getTmpDirURL().appending(path: name), to: newRecordingURL)
         } catch {
-            // Error while moving recording to docs directory
+            print ("Error moving recording to documents. ", error)
             throw .fileSaveError
         }
         
@@ -173,20 +171,6 @@ enum Files {
         //[self refreshSavedRecordingsArray];
         */
     }
-    
-    
-    
-    
-    /* Formerly:
-     - (NSString *) buildFullPathFromOuterDirectory:
-     
-     Use buildFullDocsURL, below
-     
-     static func buildTempRecordingDirFileURL(recordingName:String,
-     filename:String) -> URL {
-     return getTmpDirectory().appending(path: recordingName, directoryHint: .isDirectory).appending(path: filename)
-     }
-     */
     
     
     static func getMovementFileName(movement:String) -> String {
@@ -208,19 +192,12 @@ enum Files {
         }
     }
     
-    /* Formerly:
-     - (NSString *) buildRecordPathWithMovementName: (NSString *)movement
-     */
     static func currentRecordingMovementURL(movement:String) -> URL {
         return getCurrentRecordingURL()
             .appending(path: getMovementFileName(movement: movement))
     }
     
     
-    /* Formerly:
-     - (NSString *) buildPathWithDocumentsSubDir
-     Also replaces buildFullPathFromOuterDirectory
-     */
     static func buildFullDocsURL(recordingName:String, movement:String) -> URL {
         return getDocumentsDirURL()
             .appending(path: recordingName, directoryHint: .isDirectory)
@@ -231,13 +208,13 @@ enum Files {
         var created: String
         var geohash: String
         var title: String
+        init() {
+            created = ""
+            geohash = appConstants.LOCATION_NOT_RECORDED
+            title = ""
+        }
     }
     
-    /* Formerly:
-     - (void)writeMetadataToPath: (NSString *)path WithDictionary: (NSMutableDictionary *)metadata
-     
-     url: path including the piece name and metadata filename
-     */
     static func writeMetadataToURL(url:URL, metadata:RecordingMetaData) throws (FilesError) {
         do {
             let propEncoder = PropertyListEncoder()
@@ -252,12 +229,6 @@ enum Files {
     }
     
     
-    /* Formerly:
-     - (NSMutableDictionary *)readMetaDataFromPath: (NSString *)path
-     
-     url: path including the piece name and metadata filename
-     */
-    
     static func readMetaDataFromURL(url:URL) -> RecordingMetaData? {
         do {
             let data = try Data(contentsOf: url)
@@ -268,7 +239,40 @@ enum Files {
             return nil
         }
     }
-}
+    
+    static func saveMetaData(mdata:RecordingMetaData) throws (FilesError) {
+        do {
+            try writeMetadataToURL(url: getTmpDirURL()
+                .appending(path: mdata.title)
+                .appending(path:Files.metadataFilename),
+                                   metadata: mdata)
+        } catch {
+            throw .metaDataSaveFailed
+        }
+    }
+    
+
+    
+        /*
+        DateFormatter *dateFormatNoMsecs = [[NSDateFormatter alloc] init];
+        [dateFormatNoMsecs setDateFormat:DATE_FORMAT_NO_MILLISECONDS];
+        
+        // Get millisecond accuracy into our time stamp
+        NSDate *now = [NSDate date];
+        double secondsSinceEpoch = [now timeIntervalSince1970];
+        double integralSeconds; //ignored
+        double fractionalSeconds = modf(secondsSinceEpoch, &integralSeconds);
+        NSString *dateWithoutMsecs = [dateFormatNoMsecs stringFromDate:now];
+        NSString *fracSecsOnly = [[NSString stringWithFormat:@"%.6f", fractionalSeconds] substringFromIndex:2];
+        NSString *metadataDateTime = [NSString stringWithFormat:@"%@%@", dateWithoutMsecs, fracSecsOnly];
+        [self updateMetadataWithDateTime:metadataDateTime];
+        //NSLog (@"metadata datetime: %@", metadataDateTime );
+        */
+    }
+
+
+
+
 
 
 /*

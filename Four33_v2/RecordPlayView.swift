@@ -42,9 +42,13 @@ struct RecordPlayView: View {
                         .font(.system(size: 20))
                 }
             }
-            .alert("Microphone permission needed", isPresented: $viewModel.displayPermissionAlert) {
+            .alert("Microphone permission needed", isPresented: $viewModel.displayMicPermissionAlert) {
             } message: {
                 Text("If you wish to record your own performances of 4'33\", you will need to go to Settings/Privacy & Security/Microphone\nand enable this app.")
+            }
+            .alert("Location permission needed", isPresented: $viewModel.displayLocationPermissionAlert) {
+            } message: {
+                Text("If you wish to share your performances with the World of 4'33\", you will need to go to Settings/Privacy & Security/Location Services\nand enable this app.")
             }
 
             

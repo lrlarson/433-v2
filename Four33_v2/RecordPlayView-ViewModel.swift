@@ -10,9 +10,12 @@ import AVFoundation
 import UIKit
 
 
-
 extension RecordPlayView {
+
     @Observable class ViewModel: PieceTimerDelegate {
+        
+        private var metadata = Files.RecordingMetaData()
+        private var locationManager = LocationManager()
         private var pieceTimer:PieceTimer?
         private var meterTimer:Timer? = nil
         private var audioPlayer:AVAudioPlayer?
@@ -38,9 +41,12 @@ extension RecordPlayView {
         var currentPlayMovement:Int = 0
 
         
-        var displayPermissionAlert = false
+        var displayMicPermissionAlert = false
+        var displayLocationPermissionAlert = false
         
         init() {
+            let geoh = GeoHash()        // CONTINUE HERE!
+            
             pieceTimer = PieceTimer(timerGr: appConstants.TIMER_GRAIN,
                                     mv1dur: appConstants.MVI_DURATION,
                                     mv2dur: appConstants.MVII_DURATION,
@@ -55,15 +61,17 @@ extension RecordPlayView {
             } catch {
                 print("Error: couldn't create temp recording directory.")
             }
-            // Create default metadata
+
+            // Create default metadata file
             do {
                 try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
-                                             metadata: {Files.RecordingMetaData(created:"",
-                                                                                geohash:appConstants.LOCATION_NOT_RECORDED,
-                                                                                title:"")}())
+                                             metadata: metadata)
             } catch {
-                print("Couldn't create initial metadata.", error)
+                print("Couldn't create initial metadata file.", error)
             }
+            
+            // Initialize location manager
+            locationManager.checkLocationAuthorization()
         }
         
         func pieceTimerUpdate(eventType: timerEvent, newVal: Double) {
@@ -123,14 +131,14 @@ extension RecordPlayView {
                 AVAudioApplication.requestRecordPermission() { granted in
                     if (!granted) {
                         // Warn user that recording won't work without permission to use microphone
-                        self.displayPermissionAlert = true
+                        self.displayMicPermissionAlert = true
                     }
                 }
                 return false
             }
             else if (micPermission == .denied)
             {
-                self.displayPermissionAlert = true
+                self.displayMicPermissionAlert = true
                 return false
             }
             return true
@@ -147,6 +155,12 @@ extension RecordPlayView {
         }
         
         func startRecording() {
+            // If location permission is not given, warn user
+            locationManager.checkLocationAuthorization()
+            if (locationManager.lastAuthorized) {
+                let location = locationManager.lastKnownLocation
+                // TODO: convert to geohash
+            }
             // If microphone permission is not given, warn user
             if (checkMicAuth())
             {
@@ -157,6 +171,19 @@ extension RecordPlayView {
                 } catch {
                     print("Failed to set audio session category: \(error)")
                 }
+                
+                // Create  metadata
+                metadata.created = timeStamp()
+                
+                    /*
+                    try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
+                                                 metadata: {Files.RecordingMetaData(created:timestamp),
+                        geohash:appConstants.LOCATION_NOT_RECORDED, title:"")}())
+                } catch {
+                    print("Couldn't create initial metadata.", error)
+                }
+                */
+
 
                 resetPieceToStart()
                 startPieceTimer()
@@ -165,6 +192,21 @@ extension RecordPlayView {
                 Files.deleteMovement(movement: "Two")
                 Files.deleteMovement(movement: "Three")
             }
+        }
+        
+        // Return a twenty-digit timestamp of the form yyyyMMddHHmmssSSSSSS
+        func timeStamp() -> String {
+            let date = Date()
+            var integralSeconds : Double = 0.0
+            let fractionalSeconds = modf(date.timeIntervalSince1970, &integralSeconds)
+            let fracSecString = String(format: "%.6f", fractionalSeconds)
+            let formatted = date.formatted(
+                .verbatim("\(year: .padded(4))\(month: .twoDigits)\(day: .twoDigits)\(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .oneBased))\(minute: .twoDigits)\(second: .twoDigits)"
+                          as Date.FormatString,
+                          locale: .autoupdatingCurrent,
+                          timeZone: .current,
+                          calendar: .current))
+            return formatted + String(fracSecString.dropFirst(2))
         }
         
         func stopRecording() {

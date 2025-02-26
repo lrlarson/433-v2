@@ -24,10 +24,6 @@ struct appConstants {
 
     static let BLUE_FOR_LOGO = "007AFF"
 
-    // This date format specifies time down to milliseconds,
-    //  which furnishes part of our "World of 4'33"" UID
-    static let DATE_FORMAT_FOR_METADATA = "yyyyMMddHHmmSSSSSSSS"
-    static let DATE_FORMAT_NO_MILLISECONDS = "yyyyMMddHHmmss"
     // The geohash part of the UID has this much resolution (7 = neighborhood level)
     static let GEOHASH_DIGITS_FOR_UID  = 7
     static let GEOHASH_DIGITS_HI_ACCURACY = 12
