@@ -39,7 +39,7 @@ extension RecordPlayView {
         var piece_paused = false
         var inMovement = false
         var currentPlayMovement:Int = 0
-
+        
         
         var displayMicPermissionAlert = false
         var displayLocationPermissionAlert = false
@@ -61,7 +61,7 @@ extension RecordPlayView {
             } catch {
                 print("Error: couldn't create temp recording directory.")
             }
-
+            
             // Create default metadata file
             do {
                 try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
@@ -119,7 +119,7 @@ extension RecordPlayView {
             case .pieceCompleted:
                 endPerformance(recordingIsComplete:true)
                 intermissionTime = "Complete."
-           }
+            }
         }
         
         // Check privacy authorizaton for this app to use the microphone.
@@ -159,7 +159,11 @@ extension RecordPlayView {
             locationManager.checkLocationAuthorization()
             if (locationManager.lastAuthorized) {
                 let location = locationManager.lastKnownLocation
-                // TODO: convert to geohash
+                if (location != nil) {
+                    updateGeoHash(latitude: location!.latitude,
+                                  longitude:location!.longitude,
+                                  geohashPrecision: (UInt32)(appConstants.GEOHASH_DIGITS_HI_ACCURACY))
+                }
             }
             // If microphone permission is not given, warn user
             if (checkMicAuth())
@@ -175,16 +179,16 @@ extension RecordPlayView {
                 // Create  metadata
                 metadata.created = timeStamp()
                 
-                    /*
-                    try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
-                                                 metadata: {Files.RecordingMetaData(created:timestamp),
-                        geohash:appConstants.LOCATION_NOT_RECORDED, title:"")}())
-                } catch {
-                    print("Couldn't create initial metadata.", error)
-                }
-                */
-
-
+                /*
+                 try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
+                 metadata: {Files.RecordingMetaData(created:timestamp),
+                 geohash:appConstants.LOCATION_NOT_RECORDED, title:"")}())
+                 } catch {
+                 print("Couldn't create initial metadata.", error)
+                 }
+                 */
+                
+                
                 resetPieceToStart()
                 startPieceTimer()
                 piece_recording = true
@@ -192,6 +196,11 @@ extension RecordPlayView {
                 Files.deleteMovement(movement: "Two")
                 Files.deleteMovement(movement: "Three")
             }
+        }
+        
+        func updateGeoHash(latitude:Double, longitude: Double, geohashPrecision: UInt32) {
+            let geohash = GeoHash.hash(forLatitude:latitude, longitude:longitude, length:geohashPrecision)
+            print ("geohash: ", geohash)
         }
         
         // Return a twenty-digit timestamp of the form yyyyMMddHHmmssSSSSSS

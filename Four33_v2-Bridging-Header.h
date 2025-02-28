@@ -13,5 +13,8 @@
 #import "GHArea.h"
 #import "GHNeighbors.h"
 #import "GHRange.h"
+#import "GeoHashUtil.h"
+#import "Coverage.h"
+#import "LatLong.h"
 
 #endif /* Four33_v2_Bridging_Header_h */
