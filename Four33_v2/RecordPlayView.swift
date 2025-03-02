@@ -61,7 +61,7 @@ struct RecordPlayView: View {
             
             HStack {
                 if (viewModel.piece_recording) {
-                    recordButtonView(name: "Stop", image:"stop_wht-512", action:viewModel.stopRecording)
+                    recordButtonView(name: "Stop", image:"stop_wht-512", action:viewModel.interruptRecording)
                 } else {
                     recordButtonView(name: "Record", image:"record_wht_red-512", action:viewModel.startRecording)
                 }

@@ -12,7 +12,7 @@ import UIKit
 
 extension RecordPlayView {
 
-    @Observable class ViewModel: PieceTimerDelegate {
+    @Observable class ViewModel {     // AVAudioPlayerDelegate
         
         private var metadata = Files.RecordingMetaData()
         private var locationManager = LocationManager()
@@ -45,14 +45,13 @@ extension RecordPlayView {
         var displayLocationPermissionAlert = false
         
         init() {
-            let geoh = GeoHash()        // CONTINUE HERE!
             
             pieceTimer = PieceTimer(timerGr: appConstants.TIMER_GRAIN,
                                     mv1dur: appConstants.MVI_DURATION,
                                     mv2dur: appConstants.MVII_DURATION,
                                     mv3dur: appConstants.MVIII_DURATION,
                                     interMvDur: appConstants.INTER_MOVEMENT_DURATION,
-                                    deleg:self)
+                                    onTimerFire: pieceTimerUpdate )
             let _ = checkMicAuth()
             
             // Create current recording directory, if necessary
@@ -71,6 +70,7 @@ extension RecordPlayView {
             }
             
             // Initialize location manager
+            // (this triggers the privacy-location-permission dialog when called the first time)
             locationManager.checkLocationAuthorization()
         }
         
@@ -155,16 +155,21 @@ extension RecordPlayView {
         }
         
         func startRecording() {
-            // If location permission is not given, warn user
+            
+            metadata.geohash = appConstants.LOCATION_NOT_RECORDED
             locationManager.checkLocationAuthorization()
             if (locationManager.lastAuthorized) {
                 let location = locationManager.lastKnownLocation
                 if (location != nil) {
-                    updateGeoHash(latitude: location!.latitude,
-                                  longitude:location!.longitude,
-                                  geohashPrecision: (UInt32)(appConstants.GEOHASH_DIGITS_HI_ACCURACY))
+                    metadata.geohash = GeoHash.hash(forLatitude:location!.latitude,
+                                           longitude:location!.longitude,
+                                           length:(UInt32)(appConstants.GEOHASH_DIGITS_HI_ACCURACY))
                 }
+            } else {
+                // If location permission is not given, warn user
+                displayLocationPermissionAlert = true
             }
+            
             // If microphone permission is not given, warn user
             if (checkMicAuth())
             {
@@ -198,10 +203,6 @@ extension RecordPlayView {
             }
         }
         
-        func updateGeoHash(latitude:Double, longitude: Double, geohashPrecision: UInt32) {
-            let geohash = GeoHash.hash(forLatitude:latitude, longitude:longitude, length:geohashPrecision)
-            print ("geohash: ", geohash)
-        }
         
         // Return a twenty-digit timestamp of the form yyyyMMddHHmmssSSSSSS
         func timeStamp() -> String {
@@ -216,6 +217,15 @@ extension RecordPlayView {
                           timeZone: .current,
                           calendar: .current))
             return formatted + String(fracSecString.dropFirst(2))
+        }
+        
+        func interruptRecording() {
+            // Called by pressing the "stop" button while recording
+            stopRecording()
+            killPieceTimer()
+            piece_recording = false
+            
+            // TODO: offer save for partial recording
         }
         
         func stopRecording() {
@@ -239,6 +249,7 @@ extension RecordPlayView {
         
         func resetRecordPlayback() {
             killPieceTimer()
+            resetPieceToStart()
             piece_recording = false;
             piece_playing = false;
         }
@@ -257,10 +268,6 @@ extension RecordPlayView {
             currentPlayMovement = 0
             inMovement = false
             piece_paused = false
-            //[prog_intermission setText: @""]
-            //[piece_time setText: @""]
-            //[paused_status setText: @""]
-            //[pieceTimer resetTimer]
             playbackWasPaused = false
             //recordingNeedsSaving = false
             //secondsLeftInMovement = 999999
@@ -328,14 +335,18 @@ extension RecordPlayView {
         func updateAudioMeter() {   //called by timer
             var decibels:Float = -160.0
             
-            if (piece_recording) {
+            if (piece_recording && audioRecorder != nil) {
                 audioRecorder?.updateMeters()
                 decibels = (audioRecorder?.averagePower(forChannel:0))!
-            } else if (piece_playing) {
+            } else if (piece_playing && audioPlayer != nil) {
                 audioPlayer?.updateMeters()
                 decibels = (audioPlayer?.averagePower(forChannel:0))!
             }
-            meterLevel = pow(10, Double(decibels / 20.0))
+            if (decibels <= -160.0) {
+                meterLevel = 0.0
+            } else {
+                meterLevel = pow(10, Double(decibels / 20.0))
+            }
         }
         
         func endPerformance(recordingIsComplete:Bool) {

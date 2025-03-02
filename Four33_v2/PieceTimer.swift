@@ -7,10 +7,6 @@
 
 import Foundation
 
-protocol PieceTimerDelegate {
-    func pieceTimerUpdate(eventType:timerEvent, newVal:Double)
-}
-
 enum timerEvent {
     case pieceElapsedTime
     case movementSecondsRemaining
@@ -27,7 +23,7 @@ enum timerEvent {
 
 class PieceTimer {
     
-    var ptDel: PieceTimerDelegate
+    private var callback: ((timerEvent, Double) -> Void)?
     
     private var startTime:CFTimeInterval
     private var elapsedTime:CFTimeInterval
@@ -52,15 +48,18 @@ class PieceTimer {
     private var timerGrain:CFTimeInterval?
     
     
-    init(timerGr:CFTimeInterval, mv1dur:CFTimeInterval, mv2dur:CFTimeInterval, mv3dur:CFTimeInterval, interMvDur:CFTimeInterval, deleg:PieceTimerDelegate)
+    init(timerGr:CFTimeInterval, mv1dur:CFTimeInterval,
+         mv2dur:CFTimeInterval, mv3dur:CFTimeInterval, interMvDur:CFTimeInterval,
+         onTimerFire:@escaping(timerEvent, Double) -> Void)
     {
+        self.callback = onTimerFire
+        
         // Initialize piece timing
         movementOneDuration = mv1dur
         movementTwoDuration = mv2dur
         movementThreeDuration = mv3dur
         interMovementDuration = interMvDur
         timerGrain = timerGr
-        ptDel = deleg
         
         pauseOneStart = movementOneDuration
         movementTwoStart = movementOneDuration + interMovementDuration
@@ -127,66 +126,68 @@ class PieceTimer {
         
     func timerFired()
     {
-        elapsedTime = (CFAbsoluteTimeGetCurrent() - startTime)
-        if (elapsedTime < pauseOneStart!) {
-            ptDel.pieceTimerUpdate(eventType: .pieceElapsedTime, newVal: elapsedTime)
-            ptDel.pieceTimerUpdate(eventType: .movementSecondsRemaining, newVal: pauseOneStart! - elapsedTime)
-            
-            if (!inFirstMovement) {
-                inFirstMovement = true
+        if (callback != nil) {
+            elapsedTime = (CFAbsoluteTimeGetCurrent() - startTime)
+            if (elapsedTime < pauseOneStart!) {
+                callback!(.pieceElapsedTime, elapsedTime)
+                callback!(.movementSecondsRemaining, pauseOneStart! - elapsedTime)
+                
+                if (!inFirstMovement) {
+                    inFirstMovement = true
+                }
+                callback!(.movementOneProgress, elapsedTime / movementOneDuration)
+            } else if (elapsedTime < movementTwoStart!) {
+                // In first pause
+                if (inFirstMovement) {
+                    inFirstMovement = false
+                    callback!(.pieceElapsedTime, elapsedTime)
+                    callback!(.movementOneEnd, 0)
+                    inPause = true
+                }
+                callback!(.intermissionProgress, interMovementDuration - (elapsedTime - pauseOneStart!))
+            } else if (elapsedTime < pauseTwoStart!) {
+                // In second movement
+                callback!(.pieceElapsedTime, elapsedTime - interMovementDuration)
+                callback!(.movementSecondsRemaining, pauseTwoStart! - elapsedTime)
+                
+                if (!inSecondMovement) {
+                    inSecondMovement = true
+                    inPause = false
+                    callback!(.movementTwoStart, 0)
+                }
+                
+                let progress = (elapsedTime - movementTwoStart!) / movementTwoDuration
+                callback!(.movementTwoProgress, progress)
+            } else if (elapsedTime < movementThreeStart!) {
+                // In second pause
+                if (!inPause) {
+                    inPause = true
+                    inSecondMovement = false
+                    callback!(.movementTwoEnd, 0)
+                    callback!(.pieceElapsedTime, elapsedTime - interMovementDuration)
+                }
+                
+                let progress = interMovementDuration - (elapsedTime - pauseTwoStart!)
+                callback!(.intermissionProgress, progress)
             }
-            ptDel.pieceTimerUpdate(eventType: .movementOneProgress, newVal: elapsedTime / movementOneDuration)
-        } else if (elapsedTime < movementTwoStart!) {
-            // In first pause
-            if (inFirstMovement) {
-                inFirstMovement = false
-                ptDel.pieceTimerUpdate(eventType: .pieceElapsedTime, newVal: elapsedTime)
-                ptDel.pieceTimerUpdate(eventType: .movementOneEnd, newVal: 0)
-                inPause = true
+            else if (elapsedTime < pieceEnd!) {
+                // In third movmement
+                callback!(.pieceElapsedTime, elapsedTime - interMovementDuration * 2)
+                callback!(.movementSecondsRemaining, pieceEnd! - elapsedTime)
+                
+                if (!inThirdMovement) {
+                    inThirdMovement = true
+                    inPause = false
+                    callback!(.movementThreeStart, 0)
+                }
+                
+                let progress = (elapsedTime - movementThreeStart!) / movementThreeDuration
+                callback!(.movementThreeProgress, progress)
+            } else {
+                callback!(.pieceElapsedTime, elapsedTime - interMovementDuration * 2)
+                inThirdMovement = false
+                callback!(.pieceCompleted, 0)
             }
-            ptDel.pieceTimerUpdate(eventType: .intermissionProgress, newVal: interMovementDuration - (elapsedTime - pauseOneStart!))
-        } else if (elapsedTime < pauseTwoStart!) {
-            // In second movement
-            ptDel.pieceTimerUpdate(eventType: .pieceElapsedTime, newVal: elapsedTime - interMovementDuration)
-            ptDel.pieceTimerUpdate(eventType: .movementSecondsRemaining, newVal: pauseTwoStart! - elapsedTime)
-            
-            if (!inSecondMovement) {
-                inSecondMovement = true
-                inPause = false
-                ptDel.pieceTimerUpdate(eventType: .movementTwoStart, newVal:0)
-            }
-            
-            let progress = (elapsedTime - movementTwoStart!) / movementTwoDuration
-            ptDel.pieceTimerUpdate(eventType: .movementTwoProgress, newVal: progress)
-        } else if (elapsedTime < movementThreeStart!) {
-            // In second pause
-            if (!inPause) {
-                inPause = true
-                inSecondMovement = false
-                ptDel.pieceTimerUpdate(eventType: .movementTwoEnd, newVal: 0)
-                ptDel.pieceTimerUpdate(eventType: .pieceElapsedTime, newVal: elapsedTime - interMovementDuration)
-            }
-            
-            let progress = interMovementDuration - (elapsedTime - pauseTwoStart!)
-            ptDel.pieceTimerUpdate(eventType: .intermissionProgress, newVal: progress)
-        }
-        else if (elapsedTime < pieceEnd!) {
-            // In third movmement
-            ptDel.pieceTimerUpdate(eventType: .pieceElapsedTime, newVal: elapsedTime - interMovementDuration * 2)
-            ptDel.pieceTimerUpdate(eventType: .movementSecondsRemaining, newVal: pieceEnd! - elapsedTime)
-            
-            if (!inThirdMovement) {
-                inThirdMovement = true
-                inPause = false
-                ptDel.pieceTimerUpdate(eventType: .movementThreeStart, newVal:0)
-            }
-            
-            let progress = (elapsedTime - movementThreeStart!) / movementThreeDuration
-            ptDel.pieceTimerUpdate(eventType: .movementThreeProgress, newVal: progress)
-        } else {
-            ptDel.pieceTimerUpdate(eventType: .pieceElapsedTime, newVal: elapsedTime - interMovementDuration * 2)
-            inThirdMovement = false
-            ptDel.pieceTimerUpdate(eventType: .pieceCompleted, newVal:0)
         }
     }
 }
