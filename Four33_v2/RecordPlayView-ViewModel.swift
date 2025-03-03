@@ -12,7 +12,7 @@ import UIKit
 
 extension RecordPlayView {
 
-    @Observable class ViewModel {     // AVAudioPlayerDelegate
+    @Observable class ViewModel : NSObject, AVAudioPlayerDelegate {     // AVAudioPlayerDelegate
         
         private var metadata = Files.RecordingMetaData()
         private var locationManager = LocationManager()
@@ -44,8 +44,8 @@ extension RecordPlayView {
         var displayMicPermissionAlert = false
         var displayLocationPermissionAlert = false
         
-        init() {
-            
+        override init() {
+            super.init()
             pieceTimer = PieceTimer(timerGr: appConstants.TIMER_GRAIN,
                                     mv1dur: appConstants.MVI_DURATION,
                                     mv2dur: appConstants.MVII_DURATION,
@@ -249,9 +249,14 @@ extension RecordPlayView {
         
         func resetRecordPlayback() {
             killPieceTimer()
+            if (piece_recording) {
+                piece_recording = false;
+                stopRecording()
+            } else if (piece_playing) {
+                piece_playing = false;
+                stopPlaying()
+            }
             resetPieceToStart()
-            piece_recording = false;
-            piece_playing = false;
         }
         
         func initAllDisplay() {
@@ -310,12 +315,19 @@ extension RecordPlayView {
 
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.delegate = self
                 audioPlayer?.isMeteringEnabled = true
                 startAudioMetering()
                 audioPlayer?.play()
             } catch {
                 print("Error creating audio Recorder. \(error)")
             }
+        }
+        
+        // Called by AVAudioPlayerDelegate:
+        func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+            killPieceTimer()
+            piece_playing = false
         }
 
         func startAudioMetering() {
