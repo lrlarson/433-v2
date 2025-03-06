@@ -14,13 +14,13 @@ extension RecordPlayView {
 
     @Observable class ViewModel : NSObject, AVAudioPlayerDelegate {     // AVAudioPlayerDelegate
         
-        private var metadata = Files.RecordingMetaData()
+        private var metadata = RecordingMetaData()
         private var locationManager = LocationManager()
         private var pieceTimer:PieceTimer?
         private var meterTimer:Timer? = nil
         private var audioPlayer:AVAudioPlayer?
         private var audioRecorder:AVAudioRecorder?
-        private var secondsLeftInMovemnt = 0
+        private var secondsLeftInMovement = 0
         
         var meterLevel: Double = 0.0      // Audio meter
         var move1prog:CGFloat = 0.0
@@ -40,9 +40,13 @@ extension RecordPlayView {
         var inMovement = false
         var currentPlayMovement:Int = 0
         
+        var pieceName = ""
         
         var displayMicPermissionAlert = false
         var displayLocationPermissionAlert = false
+        var displayPartialRecordingAlert = false
+        var displayValidNameAlert = false
+        var displayDuplicateNameAlert = false
         
         override init() {
             super.init()
@@ -54,7 +58,7 @@ extension RecordPlayView {
                                     onTimerFire: pieceTimerUpdate )
             let _ = checkMicAuth()
             
-            // Create current recording directory, if necessary
+            // Create current recording directory (in 'temp'), if necessary
             do {
                 try Files.createRecordingDir(pieceName: Files.currentRecordingDirectory)
             } catch {
@@ -80,7 +84,7 @@ extension RecordPlayView {
                 let etime = Int(round(newVal))
                 elapsedTime = String(format:"%1d:%02d", etime / 60, etime % 60)
             case .movementSecondsRemaining:
-                secondsLeftInMovemnt = Int(newVal);
+                secondsLeftInMovement = Int(newVal);
             case .movementOneProgress:
                 move1prog = newVal
             case .movementTwoProgress:
@@ -155,15 +159,14 @@ extension RecordPlayView {
         }
         
         func startRecording() {
-            
             metadata.geohash = appConstants.LOCATION_NOT_RECORDED
             locationManager.checkLocationAuthorization()
             if (locationManager.lastAuthorized) {
                 let location = locationManager.lastKnownLocation
                 if (location != nil) {
                     metadata.geohash = GeoHash.hash(forLatitude:location!.latitude,
-                                           longitude:location!.longitude,
-                                           length:(UInt32)(appConstants.GEOHASH_DIGITS_HI_ACCURACY))
+                                                    longitude:location!.longitude,
+                                                    length:(UInt32)(appConstants.GEOHASH_DIGITS_HI_ACCURACY))
                 }
             } else {
                 // If location permission is not given, warn user
@@ -186,7 +189,7 @@ extension RecordPlayView {
                 
                 /*
                  try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
-                 metadata: {Files.RecordingMetaData(created:timestamp),
+                 metadata: {RecordingMetaData(created:timestamp),
                  geohash:appConstants.LOCATION_NOT_RECORDED, title:"")}())
                  } catch {
                  print("Couldn't create initial metadata.", error)
@@ -203,6 +206,22 @@ extension RecordPlayView {
             }
         }
         
+        func finishSave() {
+            if (pieceName.isEmpty) {
+                displayValidNameAlert = true
+                return
+            }
+            do {
+                try Files.saveRecording(name: pieceName)
+            } catch {
+                switch error {
+                case .duplicateName:
+                    displayDuplicateNameAlert = true
+                    break
+                default: print ("Save recording error: ", error)
+                }
+            }
+        }
         
         // Return a twenty-digit timestamp of the form yyyyMMddHHmmssSSSSSS
         func timeStamp() -> String {
@@ -225,7 +244,8 @@ extension RecordPlayView {
             killPieceTimer()
             piece_recording = false
             
-            // TODO: offer save for partial recording
+            // Offer save for partial recording
+            displayPartialRecordingAlert = true
         }
         
         func stopRecording() {
@@ -275,7 +295,7 @@ extension RecordPlayView {
             piece_paused = false
             playbackWasPaused = false
             //recordingNeedsSaving = false
-            //secondsLeftInMovement = 999999
+            secondsLeftInMovement = 999999
         }
 
 
@@ -326,8 +346,10 @@ extension RecordPlayView {
         
         // Called by AVAudioPlayerDelegate:
         func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-            killPieceTimer()
-            piece_playing = false
+            if (secondsLeftInMovement > 2) {
+                killPieceTimer()
+                piece_playing = false
+            }
         }
 
         func startAudioMetering() {
@@ -375,13 +397,6 @@ extension RecordPlayView {
             // Set a 30 second timer, to delay the inevitable autolock until user has time to see screen
             //[self reenableAutoLockInSecs:[NSNumber numberWithDouble:30.0]];
             if (recordingIsComplete) {
-                do {
-                    try Files.saveRecording(name:"testx")
-                } catch {
-                    switch error {
-                    default: print ("Save recording error: ", error)
-                    }
-                }
             }
         }
     }

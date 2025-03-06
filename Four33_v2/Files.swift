@@ -20,7 +20,7 @@ enum Files {
         case createDirectoryFailed
         case deleteFailed
         case getContentsFailed
-        case fileNotExists
+        case fileDoesNotExist
         case fileCopyFailed
         case fileSaveError
         case cleanupError
@@ -126,14 +126,13 @@ enum Files {
         for mname in movementNames {
             let tmp_url = getTmpDirURL().appending(path: name).appending(path: getMovementFileName(movement: mname))
             let from_url = currentRecordingMovementURL(movement: mname)
-            guard fileManager.fileExists(atPath: from_url.path()) else {
-                throw .fileNotExists
-            }
-            do {
-                try fileManager.copyItem(at: from_url, to: tmp_url)
-            } catch {
-                print (error)
-                throw .fileCopyFailed
+            if fileManager.fileExists(atPath: from_url.path()) {
+                do {
+                    try fileManager.copyItem(at: from_url, to: tmp_url)
+                } catch {
+                    print (error)
+                    throw .fileCopyFailed
+                }
             }
         }
         
@@ -202,17 +201,6 @@ enum Files {
         return getDocumentsDirURL()
             .appending(path: recordingName, directoryHint: .isDirectory)
             .appending(path: getMovementFileName(movement: movement))
-    }
-    
-    struct RecordingMetaData: Codable {
-        var created: String
-        var geohash: String
-        var title: String
-        init() {
-            created = ""
-            geohash = appConstants.LOCATION_NOT_RECORDED
-            title = ""
-        }
     }
     
     static func writeMetadataToURL(url:URL, metadata:RecordingMetaData) throws (FilesError) {

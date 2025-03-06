@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 
 struct RecordPlayView: View {
@@ -15,7 +16,8 @@ struct RecordPlayView: View {
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
-    
+    let recordNamePrompt = "Recording was interrupted. If you would like to save the partial recording, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'."
+    let duplicateNamePrompt = "A recording by that name already exists. Please try another."
 
     var body: some View {
         VStack {
@@ -46,12 +48,44 @@ struct RecordPlayView: View {
             } message: {
                 Text("If you wish to record your own performances of 4'33\", you will need to go to Settings/Privacy & Security/Microphone\nand enable this app.")
             }
+            
             .alert("Location permission needed", isPresented: $viewModel.displayLocationPermissionAlert) {
             } message: {
                 Text("If you wish to share your performances with the World of 4'33\", you will need to go to Settings/Privacy & Security/Location Services\nand enable this app.")
             }
-
             
+            .alert("Save partial recording?", isPresented: $viewModel.displayPartialRecordingAlert) {
+                TextField("Recording Name", text: $viewModel.pieceName)
+                    .disableAutocorrection(true)
+                    .onChange(of: viewModel.pieceName) { trimName() }
+                Button("OK", action: viewModel.finishSave)
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text(recordNamePrompt)
+            }
+
+            .alert("Please enter a valid name", isPresented: $viewModel.displayValidNameAlert) {
+                TextField("Recording Name", text: $viewModel.pieceName)
+                    .disableAutocorrection(true)
+                    .onChange(of: viewModel.pieceName) { trimName() }
+                Button("OK", action: viewModel.finishSave)
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text(recordNamePrompt)
+            }
+            
+            .alert("Duplicate name", isPresented: $viewModel.displayDuplicateNameAlert) {
+                TextField("Recording Name", text: $viewModel.pieceName)
+                    .disableAutocorrection(true)
+                    .onChange(of: viewModel.pieceName) { trimName() }
+                Button("OK", action: viewModel.finishSave)
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text(duplicateNamePrompt)
+            }
+            
+            
+
             VStack {
                 MovementProgressView(label_text:"Movement I", bar_length:52, prog_val:viewModel.move1prog)
                 MovementProgressView(label_text:"Movement II", bar_length:250, prog_val:viewModel.move2prog)
@@ -76,6 +110,13 @@ struct RecordPlayView: View {
             }
         }
     }
+    
+    func trimName () {
+        if viewModel.pieceName.count > appConstants.MAX_RECORDNAME_LENGTH {
+            viewModel.pieceName = String(viewModel.pieceName.prefix(appConstants.MAX_RECORDNAME_LENGTH))
+        }
+    }
+
 }
 
 struct recordButtonView: View {
