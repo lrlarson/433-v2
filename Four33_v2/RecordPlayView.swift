@@ -16,13 +16,14 @@ struct RecordPlayView: View {
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
-    let recordNamePrompt = "Recording was interrupted. If you would like to save the partial recording, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'."
+    let saveRecordingPrompt = "If you would like to save this recording, enter a name for it. This is your only chance to save it!"
+    let recInterruptedNamePrompt = "Recording was interrupted. If you would like to save the partial recording, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'."
     let duplicateNamePrompt = "A recording by that name already exists. Please try another."
 
     var body: some View {
         VStack {
-            Text("A Nice Long Title For A Test")
-                .padding(.bottom, 30.0)
+            Text(viewModel.pieceName)
+                .padding(.bottom, 20.0)
                 .font(.system(size: 20))
             HStack() {
                 VStack {
@@ -61,7 +62,7 @@ struct RecordPlayView: View {
                 Button("OK", action: viewModel.finishSave)
                 Button("Cancel", role: .cancel) { }
             } message: {
-                Text(recordNamePrompt)
+                Text(recInterruptedNamePrompt)
             }
 
             .alert("Please enter a valid name", isPresented: $viewModel.displayValidNameAlert) {
@@ -71,7 +72,7 @@ struct RecordPlayView: View {
                 Button("OK", action: viewModel.finishSave)
                 Button("Cancel", role: .cancel) { }
             } message: {
-                Text(recordNamePrompt)
+                Text(recInterruptedNamePrompt)
             }
             
             .alert("Duplicate name", isPresented: $viewModel.displayDuplicateNameAlert) {
@@ -84,8 +85,17 @@ struct RecordPlayView: View {
                 Text(duplicateNamePrompt)
             }
             
+            .alert("Save recording", isPresented: $viewModel.displaySaveRecordingAlert) {
+                TextField("Recording Name", text: $viewModel.pieceName)
+                    .disableAutocorrection(true)
+                    .onChange(of: viewModel.pieceName) { trimName() }
+                Button("OK", action: viewModel.finishSave)
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text(saveRecordingPrompt)
+            }
             
-
+ 
             VStack {
                 MovementProgressView(label_text:"Movement I", bar_length:52, prog_val:viewModel.move1prog)
                 MovementProgressView(label_text:"Movement II", bar_length:250, prog_val:viewModel.move2prog)
@@ -105,10 +115,17 @@ struct RecordPlayView: View {
                 if (viewModel.piece_playing) {
                     recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.stopPlaying)
                 } else {
-                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.startPlaying)
+                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.playFromStart)
                 }
             }
+        }.onDisappear {
+            viewModel.reenableAutoLockAfterDelay(seconds: 30)
+        }.onAppear {
+            // TODO: fix this (have to get 'isRecording' and 'isPlaying' working correctly)
+            //if (viewModel.audioRecorder?.isRecording || viewModel.audioRecorder?.isPlaying)
+            //viewModel.disableAutolock()
         }
+
     }
     
     func trimName () {

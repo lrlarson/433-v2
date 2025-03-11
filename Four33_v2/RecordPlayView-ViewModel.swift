@@ -14,6 +14,8 @@ extension RecordPlayView {
 
     @Observable class ViewModel : NSObject, AVAudioPlayerDelegate {     // AVAudioPlayerDelegate
         
+        private var autoLockReenableTimer:Timer? = nil
+        
         private var metadata = RecordingMetaData()
         private var locationManager = LocationManager()
         private var pieceTimer:PieceTimer?
@@ -47,6 +49,7 @@ extension RecordPlayView {
         var displayPartialRecordingAlert = false
         var displayValidNameAlert = false
         var displayDuplicateNameAlert = false
+        var displaySaveRecordingAlert = false
         
         override init() {
             super.init()
@@ -64,15 +67,7 @@ extension RecordPlayView {
             } catch {
                 print("Error: couldn't create temp recording directory.")
             }
-            
-            // Create default metadata file
-            do {
-                try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
-                                             metadata: metadata)
-            } catch {
-                print("Couldn't create initial metadata file.", error)
-            }
-            
+
             // Initialize location manager
             // (this triggers the privacy-location-permission dialog when called the first time)
             locationManager.checkLocationAuthorization()
@@ -123,6 +118,7 @@ extension RecordPlayView {
             case .pieceCompleted:
                 endPerformance(recordingIsComplete:true)
                 intermissionTime = "Complete."
+                displaySaveRecordingAlert = true
             }
         }
         
@@ -146,6 +142,27 @@ extension RecordPlayView {
                 return false
             }
             return true
+        }
+        
+        // Turn off idle timer (auto lock) (for use while recording)
+        func disableAutolock() {
+            // Kill any leftover reenable timer events
+            if (autoLockReenableTimer != nil) {
+                autoLockReenableTimer?.invalidate()
+                autoLockReenableTimer = nil;
+            }
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        
+        func reenableAutoLockAfterDelay(seconds:Int) {
+            // Kill any leftover reenable timer events
+            if (autoLockReenableTimer != nil) {
+                autoLockReenableTimer?.invalidate()
+                autoLockReenableTimer = nil;
+            }
+            autoLockReenableTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(seconds), repeats: false) { _ in
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
         }
         
         func killPieceTimer() {
@@ -183,23 +200,18 @@ extension RecordPlayView {
                 } catch {
                     print("Failed to set audio session category: \(error)")
                 }
-                
-                // Create  metadata
+                                
+                // Set date/time created
                 metadata.created = timeStamp()
                 
-                /*
-                 try Files.writeMetadataToURL(url: Files.getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename),
-                 metadata: {RecordingMetaData(created:timestamp),
-                 geohash:appConstants.LOCATION_NOT_RECORDED, title:"")}())
-                 } catch {
-                 print("Couldn't create initial metadata.", error)
-                 }
-                 */
-                
-                
                 resetPieceToStart()
+                
+                // Prevent display sleep while recording
+                disableAutolock()
+
                 startPieceTimer()
                 piece_recording = true
+                pieceName = ""
                 recordMovement(movement: "One")
                 Files.deleteMovement(movement: "Two")
                 Files.deleteMovement(movement: "Three")
@@ -212,7 +224,7 @@ extension RecordPlayView {
                 return
             }
             do {
-                try Files.saveRecording(name: pieceName)
+                try Files.saveRecording(name: pieceName, metadata: metadata)
             } catch {
                 switch error {
                 case .duplicateName:
@@ -254,8 +266,9 @@ extension RecordPlayView {
             audioRecorder = nil
         }
         
-        func startPlaying() {
+        func playFromStart() {
             resetPieceToStart()
+            disableAutolock()
             startPieceTimer()
             piece_playing = true
             playMovement(movement: "One")
@@ -265,6 +278,13 @@ extension RecordPlayView {
             stopAudioMetering()
             audioPlayer?.stop()
             audioPlayer = nil
+         }
+        
+        func pausePlayback() {
+            piece_paused = true
+            // TODO: handle pausing
+            
+            reenableAutoLockAfterDelay(seconds: 30)
         }
         
         func resetRecordPlayback() {
@@ -296,6 +316,7 @@ extension RecordPlayView {
             playbackWasPaused = false
             //recordingNeedsSaving = false
             secondsLeftInMovement = 999999
+            reenableAutoLockAfterDelay(seconds: 30)
         }
 
 
@@ -329,7 +350,6 @@ extension RecordPlayView {
         
         func playMovement(movement:String)
         {
-            //[self disableAutoLock];
             // create a new queue for the given movement
             let url = Files.currentRecordingMovementURL(movement:movement)
 
@@ -394,8 +414,7 @@ extension RecordPlayView {
                 currentPlayMovement = 0
                 inMovement = false
             }
-            // Set a 30 second timer, to delay the inevitable autolock until user has time to see screen
-            //[self reenableAutoLockInSecs:[NSNumber numberWithDouble:30.0]];
+            reenableAutoLockAfterDelay(seconds: 30)
             if (recordingIsComplete) {
             }
         }

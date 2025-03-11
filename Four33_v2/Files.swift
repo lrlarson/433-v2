@@ -96,7 +96,7 @@ enum Files {
     //   RecordPlayController to update the current recording's name. In the worst case,
     //   a save interrupted just at this point might mean the displayed recording name
     //   is not updated properly.
-    static func saveRecording(name:String) throws (FilesError)
+    static func saveRecording(name:String, metadata:RecordingMetaData) throws (FilesError)
     {
         // Check if a recording of this name already exists
         var isDir: ObjCBool = ObjCBool(true)
@@ -118,7 +118,7 @@ enum Files {
             do {
                 try fileManager.removeItem(at: getTmpDirURL().appending(path: name))
             } catch {
-                print ("Error during temp. directory cleanup.")
+                print ("Error during temp. directory cleanup: \(error)")
             }
         }
 
@@ -136,14 +136,13 @@ enum Files {
             }
         }
         
-        // Load, then edit metadata to update recording title, then save it to temp recording directory
-        var metadata = readMetaDataFromURL(url: getCurrentRecordingURL().appendingPathComponent(Files.metadataFilename))
-        guard metadata != nil else {
-            throw .noMetaDataFound
-        }
-        metadata!.title = name
+        // edit metadata to update recording title, then save it to temp recording directory
+        var newmeta = RecordingMetaData()
+        newmeta.created = metadata.created
+        newmeta.geohash = metadata.geohash
+        newmeta.title = name
         do {
-            try writeMetadataToURL(url: getTmpDirURL().appending(path: name).appending(path:Files.metadataFilename), metadata: metadata!)
+            try writeMetadataToURL(url: getTmpDirURL().appending(path: name).appending(path:Files.metadataFilename), metadata: newmeta)
         } catch {
             throw .metaDataSaveFailed
         }
