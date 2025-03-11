@@ -226,18 +226,6 @@ enum Files {
             return nil
         }
     }
-    
-    static func saveMetaData(mdata:RecordingMetaData) throws (FilesError) {
-        do {
-            try writeMetadataToURL(url: getTmpDirURL()
-                .appending(path: mdata.title)
-                .appending(path:Files.metadataFilename),
-                                   metadata: mdata)
-        } catch {
-            throw .metaDataSaveFailed
-        }
-    }
-    
 
     
         /*
