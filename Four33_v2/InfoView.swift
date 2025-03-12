@@ -8,12 +8,6 @@
 import SwiftUI
 
 
-struct TableItem: Identifiable {
-    let id = UUID()
-    let title: String
-    let action: String
-}
-
 struct InfoView: View {
     
     var body: some View {
@@ -22,36 +16,23 @@ struct InfoView: View {
                 .font(.title2)
                 .padding([.bottom], 40)
         }
-        HStack {
-            Spacer()
-            VStack (alignment: .leading, spacing: 36) {
-                Button(action: {
-                    print("Button pressed")
-                }) {
-                    Text("How to use")
-                }.buttonStyle(.borderless)
-                
-                Button(action: {
-                    print("Button pressed")
-                }) {
-                    Text("About John Cage")
-                }.buttonStyle(.borderless)
-                
-                Button(action: {
-                    print("Button pressed")
-                }) {
-                    Text("About 4'33\"")
-                }.buttonStyle(.borderless)
-                
-                Button(action: {
-                    print("Button pressed")
-                }) {
-                    Text("Credits")
-                }.buttonStyle(.borderless)
+        NavigationView {
+            HStack {
                 Spacer()
-            }
-            Spacer()
-        }.font(.title3)
+                VStack (alignment: .leading, spacing: 36) {
+                    NavigationLink("How to use", destination: HowToUseView())
+                        .font(.title3)
+                    NavigationLink("About John Cage", destination: AboutJohnCageView())
+                        .font(.title3)
+                    NavigationLink("About 4'33\"", destination: About433View())
+                        .font(.title3)
+                    NavigationLink("Credits", destination: About433View())
+                        .font(.title3)
+                    Spacer()
+                }
+                Spacer()
+            }.font(.body)
+        }
     }
 }
 

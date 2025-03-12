@@ -39,7 +39,7 @@
 		74F878952CC4028400CEA3DD /* Four33_v2 */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFolders = (
-				html,
+				docs,
 				Seed_Recording,
 			);
 			path = Four33_v2;
