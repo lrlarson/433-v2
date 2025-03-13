@@ -20,7 +20,7 @@ struct CreditsView: View {
                     Text("[Phil Stone](http://www.pkstonemusic.com) - initial concept and lead iOS programming")
                     Text("[Larry Larson](http://www.larsonassoc.org) - database and web programming")
                     Text("[Didier Garcia](http://cargocollective.com/pixelion) - design consulting")
-                    Spacer().frame(height: 12)
+                    Spacer().frame(height: 10)
                     Text("The project was made possible through the support and guidance of Laura Kuhn, Executive Director of the [John Cage Trust](http://www.johncage.org), and Gene Caprioglio, Vice President for New Music & Rights at [Edition Peters](http://www.edition-peters.com).")
                     Text("*4'33\"* is published by Henmar Press Inc., a division of the [C.F. Peters Group](http://www.edition-peters.com). All rights reserved.")
                     

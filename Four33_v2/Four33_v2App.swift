@@ -11,8 +11,9 @@ import SwiftUI
 struct Four33_v2App: App {
     @Environment(\.scenePhase) private var scenePhase
     
-    init() {        
+    init() {
     }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

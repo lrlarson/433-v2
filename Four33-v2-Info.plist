@@ -4,5 +4,10 @@
 <dict>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageName</key>
+		<string>CageAnechoic</string>
+	</dict>
 </dict>
 </plist>
