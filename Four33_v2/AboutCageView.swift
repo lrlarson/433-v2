@@ -17,38 +17,15 @@ struct AboutJohnCageView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     Text("**John Cage** (1912-1992) was a singularly inventive and much beloved American composer, writer, philosopher, and visual artist. Beginning around 1950, he departed from the pragmatism of precise musical notation and circumscribed ways of performance. His principal contribution to the history of music is his systematic establishment of the principle of indeterminacy: by adapting Zen Buddhist practices to composition and performance, Cage succeeded in bringing both authentic spiritual ideas and a liberating attitude of play to the enterprise of Western art.")
-                        .font(.system(size: 18))
                     Text("His most enduring work is his notoriously tacet *4′33* (1952). Encouraging the ultimate freedom in musical expression, the work’s three movements were indicated (in its premier performance) by the pianist’s closing and reopening of the piano key cover, during which no sounds are intentionally produced. It was first performed by Cage’s long-time friend and associate, David Tudor, at the Maverick Concert Hall in Woodstock, N.Y. on Aug. 29, 1952. A decade later, Cage would create a second “silent” piece, *0’00”*, “to be played in any way by anyone,” which he dedicated to his friend Yoko Ono and presented for the first time in Tokyo on Oct. 24, 1962.")
-                        .font(.system(size: 18))
-                }
+                 }
                 .padding(.horizontal, 24)
+                .font(.system(size: 18))
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 }
-
-/*
- <html>
- <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-   <meta http-equiv="Content-Style-Type" content="text/css">
-   <meta name='viewport' content='width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no' />
-      
-   <title>about433</title>
-   <style type="text/css">
-       
-     body {background-color: #000000; padding: 10px;}
-     p {margin: 0 0 20px 0; font: 18px Georgia; line-height: 26px; color: #bababa; }
-    .header {margin: 0; font: 17px Helvetica Neue, Arial; line-height: 28px; color: #007aff; font-weight: bold; text-transform: uppercase; letter-spacing: .1em;}
-    .accent {color: #fff; }
-    .accent_blue { color: #007aff; }
-    a { color: white; text-decoration: none; font-style: italic; border-bottom: 1px solid #007aff; }
-
-   </style>
- </head>
- <body>
- */
-
 
 #Preview {
     About433View()

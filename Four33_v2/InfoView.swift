@@ -14,22 +14,18 @@ struct InfoView: View {
         VStack {
             Text("Information")
                 .font(.title2)
-                .padding([.bottom], 40)
         }
-        NavigationView {
+        NavigationStack {
             HStack {
                 Spacer()
                 VStack (alignment: .leading, spacing: 36) {
                     NavigationLink("How to use", destination: HowToUseView())
-                        .font(.title3)
                     NavigationLink("About John Cage", destination: AboutJohnCageView())
-                        .font(.title3)
                     NavigationLink("About 4'33\"", destination: About433View())
-                        .font(.title3)
-                    NavigationLink("Credits", destination: About433View())
-                        .font(.title3)
+                    NavigationLink("Credits", destination: CreditsView())
                     Spacer()
-                }
+                }.font(.title2)
+                .padding([.top], 40)
                 Spacer()
             }.font(.body)
         }
