@@ -34,7 +34,7 @@ class PieceTimer {
     private var inFirstMovement:Bool
     private var inSecondMovement:Bool
     private var inThirdMovement:Bool
-    private var inPause:Bool
+    private var betweenMovements:Bool
     
     private var timer:Timer?
     
@@ -70,19 +70,19 @@ class PieceTimer {
         inFirstMovement =  false
         inSecondMovement =  false
         inThirdMovement =  false
-        inPause = false
+        betweenMovements = false
         elapsedTime = 0
         startTime = 0
         timer = nil
     }
     
     
-    func resetPiece ()
+    func resetPieceInfo ()
     {
-        inFirstMovement =  false
+        inFirstMovement =  true
         inSecondMovement =  false
         inThirdMovement =  false
-        inPause = false
+        betweenMovements = false
         startTime = 0
         elapsedTime = 0
     }
@@ -101,14 +101,14 @@ class PieceTimer {
     func startTimerWithQueueTime(queueTime:Double)
     {
         killTimer()
-        resetPiece()
+        elapsedTime = 0
         
         timer = Timer.scheduledTimer(withTimeInterval: timerGrain!, repeats: true) { newTimer in
             self.timerFired()
         }
         
-        // queueTime of -1 means we're not in a movement (intermission)
-        if (queueTime != -1) {
+        // queueTime of -1 means we're either at the start or not in a movement (intermission)
+        if (queueTime != -1.0) {
             if (inFirstMovement) {
                 elapsedTime = queueTime
             } else if (inSecondMovement) {
@@ -117,11 +117,7 @@ class PieceTimer {
                 elapsedTime = movementOneDuration + movementTwoDuration + (interMovementDuration * 2) + queueTime
             } // Note that no adjustment is made if we are between movements
         }
-        
-        //NSLog(@"%@%f", @"Current time: ", CFAbsoluteTimeGetCurrent())
-        //NSLog(@"%@%f%@%f", @"Queue time: ", queueTime, @" time elapsed from piece start: ", elapsedTime)
         startTime = CFAbsoluteTimeGetCurrent() - elapsedTime
-        //NSLog(@"%@%f", @"New start time: ", startTime)
     }
         
     func timerFired()
@@ -134,15 +130,16 @@ class PieceTimer {
                 
                 if (!inFirstMovement) {
                     inFirstMovement = true
+                    betweenMovements = false
                 }
                 callback!(.movementOneProgress, elapsedTime / movementOneDuration)
             } else if (elapsedTime < movementTwoStart!) {
-                // In first pause
+                // In first between-movement pause
                 if (inFirstMovement) {
                     inFirstMovement = false
                     callback!(.pieceElapsedTime, elapsedTime)
                     callback!(.movementOneEnd, 0)
-                    inPause = true
+                    betweenMovements = true
                 }
                 callback!(.intermissionProgress, interMovementDuration - (elapsedTime - pauseOneStart!))
             } else if (elapsedTime < pauseTwoStart!) {
@@ -152,16 +149,16 @@ class PieceTimer {
                 
                 if (!inSecondMovement) {
                     inSecondMovement = true
-                    inPause = false
+                    betweenMovements = false
                     callback!(.movementTwoStart, 0)
                 }
                 
                 let progress = (elapsedTime - movementTwoStart!) / movementTwoDuration
                 callback!(.movementTwoProgress, progress)
             } else if (elapsedTime < movementThreeStart!) {
-                // In second pause
-                if (!inPause) {
-                    inPause = true
+                // In second between-movement pause
+                if (!betweenMovements) {
+                    betweenMovements = true
                     inSecondMovement = false
                     callback!(.movementTwoEnd, 0)
                     callback!(.pieceElapsedTime, elapsedTime - interMovementDuration)
@@ -177,7 +174,7 @@ class PieceTimer {
                 
                 if (!inThirdMovement) {
                     inThirdMovement = true
-                    inPause = false
+                    betweenMovements = false
                     callback!(.movementThreeStart, 0)
                 }
                 

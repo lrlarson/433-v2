@@ -112,10 +112,10 @@ struct RecordPlayView: View {
                 
                 recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback)
     
-                if (viewModel.piece_playing) {
-                    recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.stopPlaying)
+                if (viewModel.piece_playing && !viewModel.piece_paused) {
+                    recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.pausePlaying)
                 } else {
-                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.playFromStart)
+                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.play)
                 }
             }
         }.onDisappear {

@@ -39,7 +39,9 @@ extension RecordPlayView {
         var piece_recording = false
         var piece_playing = false
         var piece_paused = false
-        var inMovement = false
+        var currentlyPlayingMovement = false
+        var recordingDone = false
+        var recordingNeedsSaving = false
         var currentPlayMovement:Int = 0
         
         var pieceName = ""
@@ -118,7 +120,6 @@ extension RecordPlayView {
             case .pieceCompleted:
                 endPerformance(recordingIsComplete:true)
                 intermissionTime = "Complete."
-                displaySaveRecordingAlert = true
             }
         }
         
@@ -171,8 +172,8 @@ extension RecordPlayView {
             }
         }
         
-        func startPieceTimer() {
-            pieceTimer!.startTimerWithQueueTime(queueTime: -1)
+        func startPieceTimer(starttime: Double = -1.0) {
+            pieceTimer!.startTimerWithQueueTime(queueTime: starttime)
         }
         
         func startRecording() {
@@ -209,8 +210,15 @@ extension RecordPlayView {
                 // Prevent display sleep while recording
                 disableAutolock()
 
-                startPieceTimer()
+                if (pieceTimer != nil) {
+                    pieceTimer?.resetPieceInfo()
+                }
                 piece_recording = true
+                recordingDone = false
+                recordingNeedsSaving = true
+                
+                startPieceTimer()
+                
                 pieceName = ""
                 recordMovement(movement: "One")
                 Files.deleteMovement(movement: "Two")
@@ -225,6 +233,7 @@ extension RecordPlayView {
             }
             do {
                 try Files.saveRecording(name: pieceName, metadata: metadata)
+                recordingNeedsSaving = false
             } catch {
                 switch error {
                 case .duplicateName:
@@ -251,13 +260,19 @@ extension RecordPlayView {
         }
         
         func interruptRecording() {
-            // Called by pressing the "stop" button while recording
-            stopRecording()
+            if (audioRecorder != nil && audioRecorder!.isRecording) {
+                // Called by pressing the "stop" button while recording
+                //  (as opposed to pressing it during 'intermission')
+                stopRecording()
+                recordingDone = true
+            }
+            
             killPieceTimer()
             piece_recording = false
             
             // Offer save for partial recording
             displayPartialRecordingAlert = true
+            reenableAutoLockAfterDelay(seconds: 30)
         }
         
         func stopRecording() {
@@ -266,12 +281,18 @@ extension RecordPlayView {
             audioRecorder = nil
         }
         
-        func playFromStart() {
-            resetPieceToStart()
-            disableAutolock()
-            startPieceTimer()
-            piece_playing = true
-            playMovement(movement: "One")
+        func play() {
+            if (piece_paused) {
+                unPausePlaying()
+            } else {
+                if (pieceTimer != nil) {
+                    pieceTimer?.resetPieceInfo()
+                }
+                disableAutolock()
+                startPieceTimer()
+                piece_playing = true
+                playMovement(movement: "One")
+            }
         }
         
         func stopPlaying() {
@@ -280,11 +301,27 @@ extension RecordPlayView {
             audioPlayer = nil
          }
         
-        func pausePlayback() {
+        func pausePlaying() {
             piece_paused = true
-            // TODO: handle pausing
-            
+            // TODO: complete this
+            stopAudioMetering()
+            if (currentlyPlayingMovement) {
+                audioPlayer!.pause()
+            }
+            killPieceTimer()
             reenableAutoLockAfterDelay(seconds: 30)
+        }
+        
+        func unPausePlaying() {
+            piece_playing = true
+            piece_paused = false
+            if (audioPlayer != nil)
+            {
+                audioPlayer!.play()
+                startAudioMetering()
+                startPieceTimer(starttime:audioPlayer!.currentTime)
+                disableAutolock()
+            }
         }
         
         func resetRecordPlayback() {
@@ -311,10 +348,11 @@ extension RecordPlayView {
         func resetPieceToStart() {
             initAllDisplay()
             currentPlayMovement = 0
-            inMovement = false
+            currentlyPlayingMovement = false
             piece_paused = false
             playbackWasPaused = false
-            //recordingNeedsSaving = false
+            recordingNeedsSaving = false
+            recordingDone = false
             secondsLeftInMovement = 999999
             reenableAutoLockAfterDelay(seconds: 30)
         }
@@ -359,6 +397,7 @@ extension RecordPlayView {
                 audioPlayer?.isMeteringEnabled = true
                 startAudioMetering()
                 audioPlayer?.play()
+                currentlyPlayingMovement = true
             } catch {
                 print("Error creating audio Recorder. \(error)")
             }
@@ -408,15 +447,50 @@ extension RecordPlayView {
             if (piece_recording) {
                 stopRecording()
                 piece_recording = false
+                recordingDone = true
+                displaySaveRecordingAlert = true
             } else if (piece_playing) {
                 stopPlaying()
                 piece_playing = false
                 currentPlayMovement = 0
-                inMovement = false
+                currentlyPlayingMovement = false
             }
             reenableAutoLockAfterDelay(seconds: 30)
             if (recordingIsComplete) {
             }
         }
+        
+        /*  TODO: this needs to be ported to Swift once loading of recordings is implemented
+        // A recording is about to load: kill all recording or playback
+        - (void)willLoadRecording:(NSNotification *)note
+        {
+            if (piece_recording) {
+                if (recorder->IsRunning()) {
+                    [self endPerformance:NO];
+                    recordingDone = YES;
+                } else {
+                    // we're in the "intermission"
+                    [pieceTimer killTimer];
+                    piece_recording = NO;
+                    
+                    [self setRecordButtonStateToRecord];
+                    [self enablePlayButton];
+                }
+            }
+            if (piece_paused) {
+                piece_paused = NO;
+                [paused_status setText: @""];
+                [pieceTimer startTimerWithQueueTime: -1];
+            }
+            if (piece_playing) {
+                [self endPerformance:NO];
+                // Only stop play queue if we're not in a break:
+                if (player->IsRunning() && !piece_paused) {
+                    [self stopPlayQueue];
+                }
+                [self resetPieceToStart];
+            }
+        }
+        */
     }
 }

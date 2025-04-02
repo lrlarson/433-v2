@@ -115,11 +115,7 @@ enum Files {
         
         // Cleanup the temporary copy of the piece (made above) at end of scope
         defer {
-            do {
-                try fileManager.removeItem(at: getTmpDirURL().appending(path: name))
-            } catch {
-                print ("Error during temp. directory cleanup: \(error)")
-            }
+            // TODO: fix this:  self.cleanOutRecording()
         }
 
         // Copy all three movements
@@ -156,8 +152,25 @@ enum Files {
             throw .fileSaveError
         }
         
+         func cleanOutRecording()
+         {
+             do {
+                 try fileManager.removeItem(at: getTmpDirURL().appending(path: name))
+             } catch {
+                 print ("Error during temp. directory cleanup: \(error)")
+             }
+
+             /*
+             [self resetMetadataTitle];
+             [self enablePlayButton];       // Actually disables play button because no files exist
+             */
+             // TODO: Fix this
+             //resetPieceToStart()
+             //recordingNeedsSaving = NO;
+         }
+
         /*
-        // Send "saveSucceeded" event, including saved title
+         // Send "saveSucceeded" event, including saved title
         NSMutableDictionary *extraInfo = [[NSMutableDictionary alloc] init];
         NSString *recordingTitle = name;
         [extraInfo setObject:recordingTitle forKey:@"recordingTitle"];
