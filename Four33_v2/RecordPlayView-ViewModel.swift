@@ -12,7 +12,7 @@ import UIKit
 
 extension RecordPlayView {
 
-    @Observable class ViewModel : NSObject, AVAudioPlayerDelegate {     // AVAudioPlayerDelegate
+    @Observable class ViewModel : NSObject, AVAudioPlayerDelegate {
         
         private var autoLockReenableTimer:Timer? = nil
         
@@ -73,7 +73,59 @@ extension RecordPlayView {
             // Initialize location manager
             // (this triggers the privacy-location-permission dialog when called the first time)
             locationManager.checkLocationAuthorization()
+            
+            setupNotifications()    // subscribe to notifications for audio interruption
         }
+        
+        // MARK: - AVAudioPlayerDelegate
+        func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+            if (secondsLeftInMovement > 2) {
+                killPieceTimer()
+                piece_playing = false
+            }
+        }
+
+        // MARK: - Interruption notifications
+        func setupNotifications() {
+            // Get the default notification center instance.
+            let nc = NotificationCenter.default
+            nc.addObserver(self,
+                           selector: #selector(handleInterruption),
+                           name: AVAudioSession.interruptionNotification,
+                           object: AVAudioSession.sharedInstance())
+        }
+        
+        @objc func handleInterruption(notification: Notification) {
+            guard let userInfo = notification.userInfo,
+                  let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+                  let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+                return
+            }
+            
+            // Switch over the interruption type.
+            switch type {
+            case .began:
+                // An interruption began. Update the UI as necessary.
+                print ("Interruption began.")
+                
+            case .ended:
+                // An interruption ended. Resume playback, if appropriate.
+                guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
+                let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
+                if options.contains(.shouldResume) {
+                    // An interruption ended. Resume playback.
+                    print ("Interruption ended. Resuming playback.")
+                } else {
+                    // An interruption ended. Don't resume playback.
+                    print ("Interrution ended. Not resuming playback.")
+                }
+                
+            default: ()
+            }
+        }
+
+        // MARK: -
+        
         
         func pieceTimerUpdate(eventType: timerEvent, newVal: Double) {
             switch eventType {
@@ -177,6 +229,7 @@ extension RecordPlayView {
         }
         
         func startRecording() {
+            resetPieceToStart()
             metadata.geohash = appConstants.LOCATION_NOT_RECORDED
             locationManager.checkLocationAuthorization()
             if (locationManager.lastAuthorized) {
@@ -198,10 +251,12 @@ extension RecordPlayView {
                 do {
                     try audioSession.setCategory(.playAndRecord, mode: .default)
                     try audioSession.setActive(true)
+                    try audioSession.setPrefersNoInterruptionsFromSystemAlerts(true)
                 } catch {
                     print("Failed to set audio session category: \(error)")
+                    return
                 }
-                                
+
                 // Set date/time created
                 metadata.created = timeStamp()
                 
@@ -303,7 +358,6 @@ extension RecordPlayView {
         
         func pausePlaying() {
             piece_paused = true
-            // TODO: complete this
             stopAudioMetering()
             if (currentlyPlayingMovement) {
                 audioPlayer!.pause()
@@ -403,14 +457,7 @@ extension RecordPlayView {
             }
         }
         
-        // Called by AVAudioPlayerDelegate:
-        func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-            if (secondsLeftInMovement > 2) {
-                killPieceTimer()
-                piece_playing = false
-            }
-        }
-
+        
         func startAudioMetering() {
             // Refresh audio meter at 10 hz.
             meterTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { newTimer in
@@ -479,7 +526,6 @@ extension RecordPlayView {
             }
             if (piece_paused) {
                 piece_paused = NO;
-                [paused_status setText: @""];
                 [pieceTimer startTimerWithQueueTime: -1];
             }
             if (piece_playing) {

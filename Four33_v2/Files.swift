@@ -113,11 +113,6 @@ enum Files {
             throw .createDirectoryFailed
         }
         
-        // Cleanup the temporary copy of the piece (made above) at end of scope
-        defer {
-            // TODO: fix this:  self.cleanOutRecording()
-        }
-
         // Copy all three movements
         for mname in movementNames {
             let tmp_url = getTmpDirURL().appending(path: name).appending(path: getMovementFileName(movement: mname))

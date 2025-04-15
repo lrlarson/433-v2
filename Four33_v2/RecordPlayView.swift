@@ -11,8 +11,7 @@ import Combine
 
 struct RecordPlayView: View {
     
-    @State private var viewModel = ViewModel()      // RecordPlayView-ViewModel
-
+    @State var viewModel = ViewModel()      // RecordPlayView-ViewModel
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
@@ -31,9 +30,12 @@ struct RecordPlayView: View {
                         .frame(width: 140)
                     Spacer()
                 }
-                HStack {
+                ZStack {
                     AudioView(level: viewModel.meterLevel, numCells: numCells, colors: colors)
                         .frame(minWidth: 30, idealWidth: 60, maxWidth: 60, minHeight: 1, idealHeight: CGFloat(18 * numCells), maxHeight: CGFloat(18 * numCells), alignment: .center)
+                    Text(viewModel.piece_paused ? "-- PAUSED --" : "")
+                        .frame(width: 140, height: 80)
+                        .font(.system(size: 20))
                 }
                 VStack {
                     Spacer()
@@ -45,6 +47,30 @@ struct RecordPlayView: View {
                         .font(.system(size: 20))
                 }
             }
+ 
+            VStack {
+                MovementProgressView(label_text:"Movement I", bar_length:52, prog_val:viewModel.move1prog)
+                MovementProgressView(label_text:"Movement II", bar_length:250, prog_val:viewModel.move2prog)
+                MovementProgressView(label_text:"Movement III", bar_length:175, prog_val:viewModel.move3prog)
+            }
+            .padding([.bottom, .leading], 12.0)
+            
+            HStack {
+                if (viewModel.piece_recording) {
+                    recordButtonView(name: "Stop", image:"stop_wht-512", action:viewModel.interruptRecording, disabled:viewModel.piece_playing)
+                } else {
+                    recordButtonView(name: "Record", image:"record_wht_red-512", action:viewModel.startRecording, disabled:viewModel.piece_playing)
+                }
+                
+                recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback, disabled:false)
+    
+                if (viewModel.piece_playing && !viewModel.piece_paused) {
+                    recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.pausePlaying, disabled:viewModel.piece_recording)
+                } else {
+                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.play, disabled:viewModel.piece_recording)
+                }
+            }
+            
             .alert("Microphone permission needed", isPresented: $viewModel.displayMicPermissionAlert) {
             } message: {
                 Text("If you wish to record your own performances of 4'33\", you will need to go to Settings/Privacy & Security/Microphone\nand enable this app.")
@@ -94,30 +120,6 @@ struct RecordPlayView: View {
             } message: {
                 Text(saveRecordingPrompt)
             }
-            
- 
-            VStack {
-                MovementProgressView(label_text:"Movement I", bar_length:52, prog_val:viewModel.move1prog)
-                MovementProgressView(label_text:"Movement II", bar_length:250, prog_val:viewModel.move2prog)
-                MovementProgressView(label_text:"Movement III", bar_length:175, prog_val:viewModel.move3prog)
-            }
-            .padding([.bottom, .leading], 12.0)
-            
-            HStack {
-                if (viewModel.piece_recording) {
-                    recordButtonView(name: "Stop", image:"stop_wht-512", action:viewModel.interruptRecording)
-                } else {
-                    recordButtonView(name: "Record", image:"record_wht_red-512", action:viewModel.startRecording)
-                }
-                
-                recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback)
-    
-                if (viewModel.piece_playing && !viewModel.piece_paused) {
-                    recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.pausePlaying)
-                } else {
-                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.play)
-                }
-            }
         }.onDisappear {
             viewModel.reenableAutoLockAfterDelay(seconds: 30)
         }.onAppear {
@@ -140,6 +142,7 @@ struct recordButtonView: View {
     let name:String
     let image:String
     let action:() -> Void
+    let disabled:Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -147,7 +150,7 @@ struct recordButtonView: View {
                 .font(.system(size: 12))
                 .padding(.top)
                 .frame(height: 0.1)
-            Button(action: {
+            Button( action: {
                 action()
             }) {
                 Image(image)
@@ -156,7 +159,8 @@ struct recordButtonView: View {
                     .scaledToFit()
                     .frame(width: 80, height: 80)
             }
-        }
+            .disabled(disabled)
+        }.buttonStyle(.plain)
     }
 }
 
@@ -213,11 +217,9 @@ struct MovementProgressView: View {
                 ProgressView(value: prog_val)
                     .frame(width: bar_length, height: 10.0)
                 Spacer()
-            }
-        }.padding(.bottom, 6.0)
-
+            }.padding(.bottom, 6.0)
+        }
     }
-
 }
 
 
