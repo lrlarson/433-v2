@@ -150,6 +150,7 @@ struct recordButtonView: View {
                 .font(.system(size: 12))
                 .padding(.top)
                 .frame(height: 0.1)
+                .foregroundStyle(disabled ? Color.gray : Color.white)
             Button( action: {
                 action()
             }) {
