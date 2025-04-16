@@ -43,7 +43,7 @@ struct HowToUseView: View {
                                         value.scrollTo("library", anchor: .top)
                                     }
                                 }
-                                Button("\u{2022} World of 4'33\" (sharing)") {
+                                Button("\u{2022} World of *4'33\"* (sharing)") {
                                     withAnimation {
                                         value.scrollTo("world", anchor: .top)
                                     }
@@ -75,7 +75,7 @@ struct HowToUseView: View {
                                     Text("Rename").font(.title3)
                                     Text("If you wish to change the name of the currently-selected recording, tap the **Rename** button. You will be prompted for a new name, and returned to the Library, where the new name will be displayed.")
                                      Text("Upload").font(.title3)
-                                    Text("You may upload your favorite recordings to be shared with the world at [johncage.org](http://www.johncage.org). Note that incomplete recordings or ones with no location information will not be eligible for upload. Tap the **Upload** button, confirm that you wish to upload your recording, then enter your name (or a pseudonym) when prompted. Your recording will then be uploaded to johncage.org. Shortly after that, you should be able to find it on the map of the *World of 4'33\" screen (see below).")
+                                    Text("You may upload your favorite recordings to be shared with the world at [johncage.org](http://www.johncage.org). Note that incomplete recordings or ones with no location information will not be eligible for upload. Tap the **Upload** button, confirm that you wish to upload your recording, then enter your name (or a pseudonym) when prompted. Your recording will then be uploaded to johncage.org. Shortly after that, you should be able to find it on the map of the World of *4'33\"* screen (see below).")
                                     Text("*Please note that you are responsible for the content of your recordings -- any use of copyrighted or offensive material is not allowed. The Cage Trust reserves the right to remove any recording for any reason.*")
                                  }.padding(30)
                                 Spacer().frame(height: 4)
@@ -84,8 +84,8 @@ struct HowToUseView: View {
                             }.id("library")
                             
                             VStack(alignment: .leading, spacing: 16) {
-                                Text("World of 4'33\"").font(.title)
-                                Text("On this screen, you can listen to recordings of 4/33\" performances from all over the world, including ones that you have uploaded. Browse the global map by scrolling and zooming; each pin on the map represents an uploaded recording; tap a pin to display a detail balloon, and in that balloon, you can tap the **Play** button to play the recording.")
+                                Text("World of *4'33\"*").font(.title)
+                                Text("On this screen, you can listen to recordings of *4'33\"* performances from all over the world, including ones that you have uploaded. Browse the global map by scrolling and zooming; each pin on the map represents an uploaded recording; tap a pin to display a detail balloon, and in that balloon, you can tap the **Play** button to play the recording.")
                                 Text("A set of playback information and controls are displayed at the bottom of the screen after the first selection is made. As in the **Record & Play** screen, playback may be paused at any time by pressing **Pause**, and resumed by hitting **Play** again. Tap the **purple pin** to re-center the map on the current recording (this is handy if you've browsed to somewhere else on the map and forgotten where the current recording is located).")
                                 Spacer().frame(height: 20)
                             }.id("world")

@@ -21,7 +21,7 @@ struct InfoView: View {
                 VStack (alignment: .leading, spacing: 36) {
                     NavigationLink("How to use", destination: HowToUseView())
                     NavigationLink("About John Cage", destination: AboutJohnCageView())
-                    NavigationLink("About 4'33\"", destination: About433View())
+                    NavigationLink("About *4\'33\"*", destination: About433View())
                     NavigationLink("Credits", destination: CreditsView())
                     Spacer()
                 }.font(.title2)
