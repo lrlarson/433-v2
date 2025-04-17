@@ -27,6 +27,7 @@ class PieceTimer {
     
     private var startTime:CFTimeInterval
     private var elapsedTime:CFTimeInterval
+    private var elapsedTimeAtPause:CFTimeInterval
     private var movementOneDuration:CFTimeInterval
     private var movementTwoDuration:CFTimeInterval
     private var movementThreeDuration:CFTimeInterval
@@ -34,7 +35,8 @@ class PieceTimer {
     private var inFirstMovement:Bool
     private var inSecondMovement:Bool
     private var inThirdMovement:Bool
-    private var betweenMovements:Bool
+    private var firstIntermission:Bool
+    private var secondIntermission:Bool
     
     private var timer:Timer?
     
@@ -70,8 +72,10 @@ class PieceTimer {
         inFirstMovement =  false
         inSecondMovement =  false
         inThirdMovement =  false
-        betweenMovements = false
+        firstIntermission = false
+        secondIntermission = false
         elapsedTime = 0
+        elapsedTimeAtPause = 0
         startTime = 0
         timer = nil
     }
@@ -82,15 +86,23 @@ class PieceTimer {
         inFirstMovement =  true
         inSecondMovement =  false
         inThirdMovement =  false
-        betweenMovements = false
+        firstIntermission = false
+        secondIntermission = false
         startTime = 0
         elapsedTime = 0
+        elapsedTimeAtPause = 0
     }
     
-    func killTimer()
+    // pauseTime = 0 when called on movement boundaries;
+    // only has non-zero value when called by pause action
+    func killTimer(saveElapsed:Bool = false)
     {
-        // Record accurate stopping time in case of restart
-        elapsedTime = CFAbsoluteTimeGetCurrent() - Double(startTime)
+        if (saveElapsed) {
+            // Record accurate stopping time in case of restart
+            elapsedTimeAtPause = elapsedTime
+        } else {
+            elapsedTimeAtPause = 0
+        }
         if (timer != nil) {
             timer!.invalidate()
         }
@@ -98,26 +110,29 @@ class PieceTimer {
     
     // Start piece timer:
     //  (re)set piece elapsed time to align with actual queue position
-    func startTimerWithQueueTime(queueTime:Double)
+    func startOrRestartPieceTimer()
     {
-        killTimer()
-        elapsedTime = 0
-        
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: timerGrain!, repeats: true) { newTimer in
             self.timerFired()
         }
-        
-        // queueTime of -1 means we're either at the start or not in a movement (intermission)
-        if (queueTime != -1.0) {
-            if (inFirstMovement) {
-                elapsedTime = queueTime
-            } else if (inSecondMovement) {
-                elapsedTime = movementOneDuration + interMovementDuration + queueTime
-            } else if (inThirdMovement) {
-                elapsedTime = movementOneDuration + movementTwoDuration + (interMovementDuration * 2) + queueTime
-            } // Note that no adjustment is made if we are between movements
+
+        if (inFirstMovement) {
+            elapsedTime = elapsedTimeAtPause
+        } else if (firstIntermission) {
+            elapsedTime = movementOneDuration + elapsedTimeAtPause
+        } else if (inSecondMovement) {
+            elapsedTime = movementOneDuration + interMovementDuration + elapsedTimeAtPause
+        } else if (secondIntermission) {
+            elapsedTime = movementOneDuration + interMovementDuration + movementTwoDuration + elapsedTimeAtPause
+        } else if (inThirdMovement) {
+            elapsedTime = movementOneDuration + movementTwoDuration + (interMovementDuration * 2) + elapsedTimeAtPause
+        } else {
+            elapsedTime = 0
         }
+        
         startTime = CFAbsoluteTimeGetCurrent() - elapsedTime
+        elapsedTimeAtPause = 0
     }
         
     func timerFired()
@@ -130,16 +145,15 @@ class PieceTimer {
                 
                 if (!inFirstMovement) {
                     inFirstMovement = true
-                    betweenMovements = false
                 }
                 callback!(.movementOneProgress, elapsedTime / movementOneDuration)
             } else if (elapsedTime < movementTwoStart!) {
                 // In first between-movement pause
                 if (inFirstMovement) {
                     inFirstMovement = false
+                    firstIntermission = true
                     callback!(.pieceElapsedTime, elapsedTime)
                     callback!(.movementOneEnd, 0)
-                    betweenMovements = true
                 }
                 callback!(.intermissionProgress, interMovementDuration - (elapsedTime - pauseOneStart!))
             } else if (elapsedTime < pauseTwoStart!) {
@@ -149,7 +163,7 @@ class PieceTimer {
                 
                 if (!inSecondMovement) {
                     inSecondMovement = true
-                    betweenMovements = false
+                    firstIntermission = false
                     callback!(.movementTwoStart, 0)
                 }
                 
@@ -157,8 +171,8 @@ class PieceTimer {
                 callback!(.movementTwoProgress, progress)
             } else if (elapsedTime < movementThreeStart!) {
                 // In second between-movement pause
-                if (!betweenMovements) {
-                    betweenMovements = true
+                if (!inSecondMovement) {
+                    secondIntermission = true
                     inSecondMovement = false
                     callback!(.movementTwoEnd, 0)
                     callback!(.pieceElapsedTime, elapsedTime - interMovementDuration)
@@ -174,7 +188,7 @@ class PieceTimer {
                 
                 if (!inThirdMovement) {
                     inThirdMovement = true
-                    betweenMovements = false
+                    secondIntermission = false
                     callback!(.movementThreeStart, 0)
                 }
                 

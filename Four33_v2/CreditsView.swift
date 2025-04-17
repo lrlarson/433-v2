@@ -32,9 +32,9 @@ struct CreditsView: View {
                  }
                 .padding(.horizontal, 24)
                 .font(.system(size: 20))
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .padding(.bottom, 16)
     }
 }
 
