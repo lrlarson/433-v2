@@ -80,7 +80,7 @@ extension RecordPlayView {
         // MARK: - AVAudioPlayerDelegate
         func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
             if (secondsLeftInMovement > 2) {
-                killPieceTimer()
+                pieceTimer?.killTimer()
                 piece_playing = false
             }
         }
@@ -148,6 +148,7 @@ extension RecordPlayView {
                     stopRecording()
                 } else if (piece_playing) {
                     stopPlaying()
+                    currentlyPlayingMovement = false
                 }
             case .movementTwoStart:
                 intermissionTime = ""
@@ -161,6 +162,7 @@ extension RecordPlayView {
                     stopRecording()
                 } else if (piece_playing) {
                     stopPlaying()
+                    currentlyPlayingMovement = false
                 }
             case .movementThreeStart:
                 intermissionTime = ""
@@ -170,6 +172,7 @@ extension RecordPlayView {
                     playMovement(movement: "Three")
                 }
             case .pieceCompleted:
+                currentlyPlayingMovement = false
                 endPerformance(recordingIsComplete:true)
                 intermissionTime = "Complete."
             }
@@ -223,11 +226,7 @@ extension RecordPlayView {
                 pieceTimer!.killTimer()
             }
         }
-        
-        func startPieceTimer(starttime: Double = -1.0) {
-            pieceTimer!.startTimerWithQueueTime(queueTime: starttime)
-        }
-        
+                
         func startRecording() {
             resetPieceToStart()
             metadata.geohash = appConstants.LOCATION_NOT_RECORDED
@@ -272,7 +271,7 @@ extension RecordPlayView {
                 recordingDone = false
                 recordingNeedsSaving = true
                 
-                startPieceTimer()
+                pieceTimer?.startOrRestartPieceTimer()
                 
                 pieceName = ""
                 recordMovement(movement: "One")
@@ -322,7 +321,7 @@ extension RecordPlayView {
                 recordingDone = true
             }
             
-            killPieceTimer()
+            pieceTimer?.killTimer()
             piece_recording = false
             
             // Offer save for partial recording
@@ -344,7 +343,7 @@ extension RecordPlayView {
                     pieceTimer?.resetPieceInfo()
                 }
                 disableAutolock()
-                startPieceTimer()
+                pieceTimer!.startOrRestartPieceTimer()
                 piece_playing = true
                 playMovement(movement: "One")
             }
@@ -362,7 +361,7 @@ extension RecordPlayView {
             if (currentlyPlayingMovement) {
                 audioPlayer!.pause()
             }
-            killPieceTimer()
+            pieceTimer?.killTimer(saveElapsed: true)
             reenableAutoLockAfterDelay(seconds: 30)
         }
         
@@ -373,13 +372,13 @@ extension RecordPlayView {
             {
                 audioPlayer!.play()
                 startAudioMetering()
-                startPieceTimer(starttime:audioPlayer!.currentTime)
                 disableAutolock()
             }
+            pieceTimer?.startOrRestartPieceTimer()
         }
         
         func resetRecordPlayback() {
-            killPieceTimer()
+            pieceTimer?.killTimer()
             if (piece_recording) {
                 piece_recording = false;
                 stopRecording()
@@ -490,7 +489,7 @@ extension RecordPlayView {
         }
         
         func endPerformance(recordingIsComplete:Bool) {
-            killPieceTimer()
+            pieceTimer?.killTimer()
             if (piece_recording) {
                 stopRecording()
                 piece_recording = false
@@ -500,7 +499,6 @@ extension RecordPlayView {
                 stopPlaying()
                 piece_playing = false
                 currentPlayMovement = 0
-                currentlyPlayingMovement = false
             }
             reenableAutoLockAfterDelay(seconds: 30)
             if (recordingIsComplete) {

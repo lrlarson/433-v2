@@ -21,9 +21,9 @@ struct AboutJohnCageView: View {
                  }
                 .padding(.horizontal, 24)
                 .font(.system(size: 18))
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .padding(.bottom, 16)
     }
 }
 
