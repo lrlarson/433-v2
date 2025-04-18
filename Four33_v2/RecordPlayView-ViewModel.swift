@@ -342,6 +342,7 @@ extension RecordPlayView {
                 if (pieceTimer != nil) {
                     pieceTimer?.resetPieceInfo()
                 }
+                resetPieceToStart()
                 disableAutolock()
                 pieceTimer!.startOrRestartPieceTimer()
                 piece_playing = true
@@ -408,6 +409,7 @@ extension RecordPlayView {
             recordingDone = false
             secondsLeftInMovement = 999999
             reenableAutoLockAfterDelay(seconds: 30)
+            intermissionTime = ""
         }
 
 

@@ -106,31 +106,19 @@ class PieceTimer {
         if (timer != nil) {
             timer!.invalidate()
         }
+        print ("killTimer, elapsedTimeAtPause: ", elapsedTimeAtPause)
     }
     
-    // Start piece timer:
-    //  (re)set piece elapsed time to align with actual queue position
+    // Start piece timer
     func startOrRestartPieceTimer()
     {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: timerGrain!, repeats: true) { newTimer in
             self.timerFired()
         }
-
-        if (inFirstMovement) {
-            elapsedTime = elapsedTimeAtPause
-        } else if (firstIntermission) {
-            elapsedTime = movementOneDuration + elapsedTimeAtPause
-        } else if (inSecondMovement) {
-            elapsedTime = movementOneDuration + interMovementDuration + elapsedTimeAtPause
-        } else if (secondIntermission) {
-            elapsedTime = movementOneDuration + interMovementDuration + movementTwoDuration + elapsedTimeAtPause
-        } else if (inThirdMovement) {
-            elapsedTime = movementOneDuration + movementTwoDuration + (interMovementDuration * 2) + elapsedTimeAtPause
-        } else {
-            elapsedTime = 0
-        }
         
+        // (re)set piece start time relative to stored elapsed time, which is zero unless incalled from 'unpause'
+        elapsedTime = elapsedTimeAtPause
         startTime = CFAbsoluteTimeGetCurrent() - elapsedTime
         elapsedTimeAtPause = 0
     }
