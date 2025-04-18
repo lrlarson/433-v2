@@ -7,74 +7,57 @@ struct WorldView: View {
     @State private var selectedAudioURL: URL? = nil
     @State private var audioPlayer: AVPlayer? = nil
 
+    @State private var selectedAnnotation: RecordingAnnotation? = nil
+    @State private var showDetails = false
+
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         span: MKCoordinateSpan(latitudeDelta: 50, longitudeDelta: 50)
     )
 
-    // Convert your recordings into annotation-ready structs
     var annotatedRecordings: [RecordingAnnotation] {
-        allRecordings.recordings.compactMap { recording in
-            guard let lat = Double(recording.lat),
-                  let lon = Double(recording.lon) else {
-                return nil
-            }
+        allRecordings.recordings.map { recording in
+            let lat = Double(recording.lat) ?? 0.0
+            let lon = Double(recording.lon) ?? 0.0
+
             return RecordingAnnotation(
                 id: recording.id,
                 title: recording.title,
+                date: recording.dateTimeCreated,
+                recordist: recording.recordist,
                 coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon),
                 link: recording.link
             )
         }
     }
 
+
     var body: some View {
         NavigationView {
             VStack {
-                
-                    // ✅ iOS 17+ Map using Annotation(content:)
-                    Map() {
-                        ForEach(annotatedRecordings) { item in
-                            Annotation("", coordinate: item.coordinate) {
-                                VStack {
-                                    Image(systemName: "mappin")
-                                        .foregroundColor(.green)
-                                        .onTapGesture {
-                                            playAudio(urlString: item.link)
-                                        }
-                                        .font(.system(size: 30))  
-                                   
-                                }
+                Map {
+                    ForEach(annotatedRecordings) { item in
+                        Annotation("", coordinate: item.coordinate) {
+                            VStack {
+                                Image(systemName: "mappin")
+                                    .foregroundColor(.green)
+                                    .onTapGesture {
+                                        selectedAnnotation = item
+                                        showDetails = true
+                                        playAudio(urlString: item.link)
+                                    }
+                                    .font(.system(size: 30))
                             }
                         }
                     }
-                    .frame(height: 500)
-                 
-                   
-                   
-                
+                }
+                .frame(height: 500)
 
-                // Optional playback feedback
                 if let url = selectedAudioURL {
                     Text("🎵 Playing: \(url.lastPathComponent)")
                         .font(.caption)
                         .padding(.bottom, 5)
                 }
-
-                // Optional: list below the map
-                /*
-                List(allRecordings.recordings) { recording in
-                    VStack(alignment: .leading) {
-                        Text(recording.title)
-                            .font(.headline)
-                        Text("Recorded by: \(recording.recordist)")
-                            .font(.subheadline)
-                    }
-                    .onTapGesture {
-                        playAudio(urlString: recording.link)
-                    }
-                }
-                 */
             }
             .navigationTitle("World of 4'33")
             .onAppear {
@@ -82,22 +65,52 @@ struct WorldView: View {
                     await allRecordings.fetchPerformances()
                 }
             }
+            .sheet(isPresented: $showDetails) {
+                if let item = selectedAnnotation {
+                    VStack(spacing: 10) {
+                        Text("📅 Date: \(item.date)")
+                        Text("🎵 Title: \(item.title)")
+                        Text("🎙️ Recordist: \(item.recordist)")
+                        Button("Close") {
+                            showDetails = false
+                        }
+                        .padding(.top)
+                    }
+                    .padding()
+                    .presentationDetents([.fraction(0.25)]) // Optional for iOS 16+
+                }
+            }
+            .onChange(of: showDetails) {
+                if !showDetails {
+                    stopAudio()
+                }
+            }
+
         }
     }
 
-    // 🔊 Reusable audio playback logic
     private func playAudio(urlString: String) {
         guard let url = URL(string: urlString) else { return }
         selectedAudioURL = url
         audioPlayer = AVPlayer(url: url)
         audioPlayer?.play()
     }
+    private func stopAudio() {
+        audioPlayer?.pause()
+        audioPlayer = nil
+        selectedAudioURL = nil
+    }
+
 }
+
 
 // 📍 Map-friendly annotation struct
 struct RecordingAnnotation: Identifiable {
     let id: String
     let title: String
+    let date: String
+    let recordist: String
     let coordinate: CLLocationCoordinate2D
     let link: String
 }
+
