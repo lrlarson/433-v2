@@ -9,66 +9,134 @@ import SwiftUI
 
 struct LibraryView: View {
     let parentFolderURL: URL = Files.getDocumentsDirURL()
-    @State private var folders: [String] = []
-    @State private var selection = "Red"
-    let colors = ["Red", "Green", "Blue", "Black", "Tartan"]
-    @State private var isShowingPopover = true
-
     
+    struct FileItem: Identifiable {
+        let id = UUID()
+        let name: String
+        let creationDate: Date
+    }
+    
+    @State private var files: [FileItem] = []
+
+    @State private var sortOrder: SortOrder = .dateDescending   // default: sort newest first
+
+     enum SortOrder {
+         case nameAscending, nameDescending, dateAscending, dateDescending
+     }
+    
+    var sortedItems: [FileItem] {
+        switch sortOrder {
+        case .nameAscending:
+            return files.sorted { $0.name < $1.name }
+        case .nameDescending:
+            return files.sorted { $0.name > $1.name }
+        case .dateAscending:
+            return files.sorted { $0.creationDate < $1.creationDate }
+        case .dateDescending:
+            return files.sorted { $0.creationDate > $1.creationDate }
+        }
+    }
+
+
     init() {
-        //Use this if NavigationBarTitle is with Large Font
-        UINavigationBar.appearance().largeTitleTextAttributes = [.font : UIFont(name: "Georgia-Bold", size: 26)!]
     }
 
     var body: some View {
-        ZStack {
-            VStack {
-                NavigationView {
-                    List(folders, id: \.self) { folder in
-                        Text(folder)
+        
+        NavigationStack {
+            // Headers
+            HStack {
+                Button(action: {
+                    toggleSort(by: .name)
+                }) {
+                    HStack {
+                        Text("Name")
+                        Image(systemName: sortOrder == .nameAscending ? "arrow.down" : (sortOrder == .nameDescending ? "arrow.up" : ""))
                     }
-                    .navigationTitle("Saved Performances")
-                    .font(.title3)
-                    .onAppear(perform: fetchFolders)
-                    TabView {
-                        Tab("Received", systemImage: "tray.and.arrow.down.fill") {
-                            //ReceivedView()
-                        }
-                        Tab("Sent", systemImage: "tray.and.arrow.up.fill") {
-                            //SentView()
-                        }
-                        Tab("Account", systemImage: "person.crop.circle.fill") {
-                            //AccountView()
-                        }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Button(action: {
+                    toggleSort(by: .created)
+                }) {
+                    HStack {
+                        Text("Created")
+                        Image(systemName: sortOrder == .dateAscending ? "arrow.down" : (sortOrder == .dateDescending ? "arrow.up" : ""))
                     }
-                    
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal)
+            .padding(.top, 10)
+            .font(.headline)
+
+            List(sortedItems) { file in
+                HStack() {
+                    Text(file.name)
+                        .font(.headline)
+                    Spacer()
+                    Text("\(file.creationDate.formatted(.dateTime))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
             }
-            .popover(isPresented: $isShowingPopover, content: {
-                Picker("Select a paint color", selection: $selection) {
-                    ForEach(colors, id: \.self) {
-                        Text($0)
-                    }
+
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Text("Saved Performances")
+                        .font(Font.headline)
                 }
-                .pickerStyle(.menu)
-                .padding()
-                .presentationCompactAdaptation(.popover)
-            })
+               ToolbarItem(placement: .topBarTrailing) {
+                    Button("Edit") {}
+                }
+
+            }
+            .padding(.top, 1)
+            .navigationBarTitleDisplayMode(.inline)
+            .font(.custom("HelveticaNeue-Light", size: 18))
+            .onAppear(perform: loadFiles)
+        }
+    }
+    
+    func fileDeleted(at offsets: IndexSet) {
+    }
+
+    func loadFiles() {
+        let fileManager = FileManager.default
+
+        do {
+            let fileURLs = try fileManager.contentsOfDirectory(at: parentFolderURL, includingPropertiesForKeys: [.creationDateKey], options: [.skipsHiddenFiles])
+            
+            let fileItems: [FileItem] = fileURLs.compactMap { url in
+                if let creationDate = try? url.resourceValues(forKeys: [.creationDateKey]).creationDate {
+                    return FileItem(name: url.lastPathComponent, creationDate: creationDate)
+                } else {
+                    return nil
+                }
+            }
+
+            files = fileItems.sorted { $0.creationDate > $1.creationDate }
+        } catch {
+            print("Error reading folder: \(error.localizedDescription)")
+        }
+    }
+    
+    func toggleSort(by column: SortColumn) {
+        switch column {
+        case .name:
+            sortOrder = (sortOrder == .nameAscending) ? .nameDescending : .nameAscending
+        case .created:
+            sortOrder = (sortOrder == .dateAscending) ? .dateDescending : .dateAscending
         }
     }
 
-    private func fetchFolders() {
-        do {
-            let fileManager = FileManager.default
-            let contents = try fileManager.contentsOfDirectory(at: parentFolderURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-            folders = contents
-                .filter { $0.hasDirectoryPath } // Ensure it's a folder
-                .map { $0.lastPathComponent }
-        } catch {
-            print("Error fetching folders: \(error)")
-        }
+    enum SortColumn {
+        case name, created
     }
+
 }
+
+
 
 /*
  struct FolderListView_Previews: PreviewProvider {
