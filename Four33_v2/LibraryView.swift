@@ -67,6 +67,9 @@ struct LibraryView: View {
                         Text("Created")
                         if (sortOrder == .dateAscending || sortOrder == .dateDescending) {
                             Image(systemName: sortOrder == .dateAscending ? "arrow.down" :  "arrow.up")
+                        } else {
+                            Text("")
+                                .frame(width: 18)
                         }
                     }
                 }
@@ -83,10 +86,13 @@ struct LibraryView: View {
                     HStack() {
                         Text(file.name)
                             .font(.subheadline)
-                        Spacer()
+                            .frame(minWidth: 190, maxWidth: .infinity)
+                        Spacer(minLength: 80)
                         Text("\(file.creationDate.formatted(date: .numeric, time: .omitted))")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .frame(minWidth: 100, maxWidth: .infinity)
+                        NavigationLink(destination: RecordingView()){}
                     }
                 }
                 .onDelete(perform: fileDeleted)
