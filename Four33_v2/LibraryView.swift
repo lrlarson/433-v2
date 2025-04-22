@@ -17,12 +17,13 @@ struct LibraryView: View {
     }
     
     @State private var files: [FileItem] = []
+    @State private var sortOrder: SortOrder = .dateDescending   // default sort: newest first
+    @State private var displayDeleteAlert: Bool = false
+    @State private var deleteURL : URL? = nil
 
-    @State private var sortOrder: SortOrder = .dateDescending   // default: sort newest first
-
-     enum SortOrder {
-         case nameAscending, nameDescending, dateAscending, dateDescending
-     }
+    enum SortOrder {
+        case nameAscending, nameDescending, dateAscending, dateDescending
+    }
     
     var sortedItems: [FileItem] {
         switch sortOrder {
@@ -36,7 +37,7 @@ struct LibraryView: View {
             return files.sorted { $0.creationDate > $1.creationDate }
         }
     }
-
+    
 
     init() {
     }
@@ -46,59 +47,88 @@ struct LibraryView: View {
         NavigationStack {
             // Headers
             HStack {
+                Spacer(minLength: 16)
                 Button(action: {
                     toggleSort(by: .name)
                 }) {
                     HStack {
                         Text("Name")
-                        Image(systemName: sortOrder == .nameAscending ? "arrow.down" : (sortOrder == .nameDescending ? "arrow.up" : ""))
+                        if (sortOrder == .nameAscending || sortOrder == .nameDescending) {
+                            Image(systemName: sortOrder == .nameAscending ? "arrow.down" : "arrow.up")
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-
+                Spacer()
                 Button(action: {
                     toggleSort(by: .created)
                 }) {
                     HStack {
                         Text("Created")
-                        Image(systemName: sortOrder == .dateAscending ? "arrow.down" : (sortOrder == .dateDescending ? "arrow.up" : ""))
+                        if (sortOrder == .dateAscending || sortOrder == .dateDescending) {
+                            Image(systemName: sortOrder == .dateAscending ? "arrow.down" :  "arrow.up")
+                        }
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                Spacer(minLength: 16)
             }
             .padding(.horizontal)
-            .padding(.top, 10)
+            .padding(.bottom, 0)
+            .padding(.top, 20)
             .font(.headline)
 
-            List(sortedItems) { file in
-                HStack() {
-                    Text(file.name)
-                        .font(.headline)
-                    Spacer()
-                    Text("\(file.creationDate.formatted(.dateTime))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+            List() {
+                ForEach (sortedItems) { file in
+                    HStack() {
+                        Text(file.name)
+                            .font(.subheadline)
+                        Spacer()
+                        Text("\(file.creationDate.formatted(date: .numeric, time: .omitted))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
+                .onDelete(perform: fileDeleted)
             }
-
+            .listStyle(PlainListStyle())
+            .navigationTitle("Saved Performances")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Text("Saved Performances")
-                        .font(Font.headline)
-                }
-               ToolbarItem(placement: .topBarTrailing) {
-                    Button("Edit") {}
-                }
-
+                EditButton()
             }
-            .padding(.top, 1)
+            .padding(.bottom, 0)
             .navigationBarTitleDisplayMode(.inline)
             .font(.custom("HelveticaNeue-Light", size: 18))
             .onAppear(perform: loadFiles)
+            
+            .alert("Delete recording?", isPresented: $displayDeleteAlert) {
+                Button("OK", action: completeDelete)
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to delete the recording \"\(deleteURL?.lastPathComponent ?? "")\"?")
+            }
         }
     }
     
     func fileDeleted(at offsets: IndexSet) {
+        for index in offsets {
+            let fileName = sortedItems[index].name
+            deleteURL = parentFolderURL.appendingPathComponent(fileName)
+            displayDeleteAlert = true
+        }
+    }
+    
+    func completeDelete ()
+    {
+        displayDeleteAlert = false
+        if (deleteURL != nil) {
+            do {
+            try FileManager.default.removeItem(at: deleteURL!)
+            loadFiles()
+            } catch {
+                print("Failed to delete file: /(error)")
+            }
+        }
     }
 
     func loadFiles() {
@@ -114,7 +144,6 @@ struct LibraryView: View {
                     return nil
                 }
             }
-
             files = fileItems.sorted { $0.creationDate > $1.creationDate }
         } catch {
             print("Error reading folder: \(error.localizedDescription)")
@@ -133,7 +162,6 @@ struct LibraryView: View {
     enum SortColumn {
         case name, created
     }
-
 }
 
 
