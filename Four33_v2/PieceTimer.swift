@@ -106,8 +106,7 @@ class PieceTimer {
         if (timer != nil) {
             timer!.invalidate()
         }
-        print ("killTimer, elapsedTimeAtPause: ", elapsedTimeAtPause)
-    }
+-    }
     
     // Start piece timer
     func startOrRestartPieceTimer()
@@ -159,7 +158,7 @@ class PieceTimer {
                 callback!(.movementTwoProgress, progress)
             } else if (elapsedTime < movementThreeStart!) {
                 // In second between-movement pause
-                if (!inSecondMovement) {
+                if (!secondIntermission) {
                     secondIntermission = true
                     inSecondMovement = false
                     callback!(.movementTwoEnd, 0)

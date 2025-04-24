@@ -378,7 +378,7 @@ extension RecordPlayView {
             pieceTimer?.startOrRestartPieceTimer()
         }
         
-        func resetRecordPlayback() {
+        func resetRecordPlayback()  {
             pieceTimer?.killTimer()
             if (piece_recording) {
                 piece_recording = false;
