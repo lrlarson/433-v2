@@ -106,7 +106,7 @@ class PieceTimer {
         if (timer != nil) {
             timer!.invalidate()
         }
--    }
+    }
     
     // Start piece timer
     func startOrRestartPieceTimer()

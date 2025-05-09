@@ -11,7 +11,7 @@ import Combine
 
 struct RecordPlayView: View {
     
-    @State var viewModel = ViewModel()      // RecordPlayView-ViewModel
+    @State var viewModel = RPV_ViewModel()      // RecordPlayView-ViewModel
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]

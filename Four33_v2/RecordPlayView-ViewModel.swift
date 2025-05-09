@@ -12,7 +12,8 @@ import UIKit
 
 extension RecordPlayView {
 
-    @Observable class ViewModel : NSObject, AVAudioPlayerDelegate {
+    @Observable
+    class RPV_ViewModel : NSObject, AVAudioPlayerDelegate {
         
         private var autoLockReenableTimer:Timer? = nil
         
