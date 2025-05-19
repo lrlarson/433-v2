@@ -33,6 +33,7 @@ struct PFileItem: Identifiable, Hashable {
 // MARK: - Main View
 struct LibraryView: View {
     @State private var viewModel : LV_ViewModel     // LibraryView-ViewModel
+    @State private var itemToDelete: IndexSet?
     
     init() {
         _viewModel = State(initialValue: LV_ViewModel())
@@ -78,16 +79,19 @@ struct LibraryView: View {
             .font(.headline)
             
             List {
-                ForEach(viewModel.items) { pfile in
+                ForEach(viewModel.fileItems) { pfile in
                     FileItemRow(item: pfile, viewModel: viewModel)
-                }.onDelete(perform: viewModel.fileDeleted)
+                }.onDelete { indexSet in
+                    itemToDelete = indexSet
+                    viewModel.displayDeleteAlert = true
+                }
 
             }
             .listStyle(PlainListStyle())
             .navigationTitle("Saved Performances")
-            .toolbar {
-                EditButton()
-            }
+//            .toolbar {
+//                EditButton()
+//            }
             .padding(.bottom, 0)
             .navigationBarTitleDisplayMode(.inline)
             .font(.custom("HelveticaNeue-Light", size: 18))
@@ -98,7 +102,11 @@ struct LibraryView: View {
         
         
         .alert("Delete recording?", isPresented: $viewModel.displayDeleteAlert) {
-            Button("OK", action: viewModel.completeDelete)
+            Button("Delete", role: .destructive) {
+                if let indexSet = itemToDelete {
+                    viewModel.completeDelete(at: indexSet)
+                }
+            }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("Are you sure you want to delete the recording \"\(viewModel.deleteURL?.lastPathComponent ?? "")\"?")
@@ -122,6 +130,7 @@ struct FileItemRow: View {
                 .foregroundColor(.secondary)
                 .frame(minWidth: 100, maxWidth: .infinity)
             NavigationLink(destination: LibraryMapView(performanceURL: viewModel.parentFolderURL)){}
+            Spacer()
         }
     }
 }
@@ -129,19 +138,17 @@ struct FileItemRow: View {
 
 
 // MARK: - LibraryView View Model
-
 extension LibraryView {
     
     @Observable @MainActor class LV_ViewModel {
         let parentFolderURL: URL = Files.getDocumentsDirURL()
-        
+
         var fileItems: [PFileItem] = []
         var sortOrder: SortOrder = .dateDescending   // default sort: newest first
         var displayDeleteAlert: Bool = false
         var deleteURL : URL? = nil
         var isLoading = false
         var errorMessage: String? = nil
-        var items: [PFileItem] = []
 
         enum SortOrder {
             case nameAscending, nameDescending, dateAscending, dateDescending
@@ -170,13 +177,12 @@ extension LibraryView {
             case .created:
                 sortOrder = (sortOrder == .dateAscending) ? .dateDescending : .dateAscending
             }
-            self.items = sortedItems
+            self.fileItems = sortedItems
         }
         
         enum SortColumn {
             case name, created
         }
-
         
         private var metadata = RecordingMetaData()
         var pieceName = ""
@@ -186,7 +192,7 @@ extension LibraryView {
         func loadContents() async {
             isLoading = true
             errorMessage = nil
-            self.items = []
+            fileItems = []
             
             do {
                 // Get directory contents on a background thread to avoid blocking UI
@@ -210,7 +216,6 @@ extension LibraryView {
                 }
                 
                 // Update the UI (already on MainActor)
-                self.items = sortedItems
                 self.isLoading = false
             } catch {
                 // Handle errors (already on MainActor)
@@ -221,16 +226,36 @@ extension LibraryView {
 
                 
         func fileDeleted(at offsets: IndexSet) {
-            for index in offsets {
-                let fileName = sortedItems[index].name
-                deleteURL = parentFolderURL.appendingPathComponent(fileName)
-                displayDeleteAlert = true
+            for _ in offsets {
+                 displayDeleteAlert = true
             }
         }
         
-        func completeDelete ()
+        func completeDelete(at offsets: IndexSet)
         {
             displayDeleteAlert = false
+            let filesToDelete = offsets.map { sortedItems[$0] }
+            
+            var indicesToRemove = IndexSet()
+            
+            let fileManager = FileManager.default
+            // Try to delete each file
+            for (index, fileURL) in zip(offsets, filesToDelete) {
+                do {
+                    let deleteURL = parentFolderURL.appendingPathComponent(fileURL.name)
+                    try fileManager.removeItem(at: deleteURL)
+                    indicesToRemove.insert(index)
+                } catch {
+                    print("Failed to delete file: /(error)")
+                    break
+                }
+            }
+            
+            fileItems.remove(atOffsets: indicesToRemove)
+            
+            /*
+            let fileName = sortedItems[offsets.].name
+            deleteURL = parentFolderURL.appendingPathComponent(fileName)
             if (deleteURL != nil) {
                 do {
                     try FileManager.default.removeItem(at: deleteURL!)
@@ -239,6 +264,7 @@ extension LibraryView {
                     print("Failed to delete file: /(error)")
                 }
             }
+            */
         }
     }
 }
