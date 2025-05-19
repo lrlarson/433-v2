@@ -33,7 +33,7 @@ struct PFileItem: Identifiable, Hashable {
 // MARK: - Main View
 struct LibraryView: View {
     @State private var viewModel : LV_ViewModel     // LibraryView-ViewModel
-    @State private var itemToDelete: IndexSet?
+    @State private var itemsToDelete: IndexSet?
     
     init() {
         _viewModel = State(initialValue: LV_ViewModel())
@@ -82,16 +82,16 @@ struct LibraryView: View {
                 ForEach(viewModel.fileItems) { pfile in
                     FileItemRow(item: pfile, viewModel: viewModel)
                 }.onDelete { indexSet in
-                    itemToDelete = indexSet
-                    viewModel.displayDeleteAlert = true
+                    itemsToDelete = indexSet
+                    for (index) in (indexSet) {
+                        viewModel.displayDeleteAlert = true
+                        viewModel.deleteFileName = viewModel.fileItems[index].name
+                    }
                 }
 
             }
             .listStyle(PlainListStyle())
             .navigationTitle("Saved Performances")
-//            .toolbar {
-//                EditButton()
-//            }
             .padding(.bottom, 0)
             .navigationBarTitleDisplayMode(.inline)
             .font(.custom("HelveticaNeue-Light", size: 18))
@@ -100,16 +100,15 @@ struct LibraryView: View {
             await viewModel.loadContents()
         }
         
-        
         .alert("Delete recording?", isPresented: $viewModel.displayDeleteAlert) {
             Button("Delete", role: .destructive) {
-                if let indexSet = itemToDelete {
+                if let indexSet = itemsToDelete {
                     viewModel.completeDelete(at: indexSet)
                 }
             }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("Are you sure you want to delete the recording \"\(viewModel.deleteURL?.lastPathComponent ?? "")\"?")
+            Text("Are you sure you want to delete the recording \"\(viewModel.deleteFileName ?? "")\"?")
         }
     }
 }
@@ -149,6 +148,7 @@ extension LibraryView {
         var deleteURL : URL? = nil
         var isLoading = false
         var errorMessage: String? = nil
+        var deleteFileName: String? = nil
 
         enum SortOrder {
             case nameAscending, nameDescending, dateAscending, dateDescending
@@ -225,46 +225,28 @@ extension LibraryView {
         }
 
                 
-        func fileDeleted(at offsets: IndexSet) {
-            for _ in offsets {
-                 displayDeleteAlert = true
-            }
-        }
-        
         func completeDelete(at offsets: IndexSet)
         {
             displayDeleteAlert = false
             let filesToDelete = offsets.map { sortedItems[$0] }
-            
             var indicesToRemove = IndexSet()
-            
             let fileManager = FileManager.default
             // Try to delete each file
             for (index, fileURL) in zip(offsets, filesToDelete) {
+                deleteURL = parentFolderURL.appendingPathComponent(fileURL.name)
+                if (deleteURL != nil)
+                {
                 do {
-                    let deleteURL = parentFolderURL.appendingPathComponent(fileURL.name)
-                    try fileManager.removeItem(at: deleteURL)
-                    indicesToRemove.insert(index)
-                } catch {
-                    print("Failed to delete file: /(error)")
-                    break
+                        try fileManager.removeItem(at: deleteURL!)
+                        indicesToRemove.insert(index)
+                    } catch {
+                        print("Failed to delete file: /(fileURL.lastPathComponent): \(error.localizedDescription)")
+                        break
+                    }
                 }
             }
             
             fileItems.remove(atOffsets: indicesToRemove)
-            
-            /*
-            let fileName = sortedItems[offsets.].name
-            deleteURL = parentFolderURL.appendingPathComponent(fileName)
-            if (deleteURL != nil) {
-                do {
-                    try FileManager.default.removeItem(at: deleteURL!)
-                    //filesFromURL(Files.getDocumentsDirURL())
-                } catch {
-                    print("Failed to delete file: /(error)")
-                }
-            }
-            */
         }
     }
 }
