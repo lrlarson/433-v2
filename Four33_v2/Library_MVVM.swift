@@ -128,7 +128,8 @@ struct FileItemRow: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .frame(minWidth: 100, maxWidth: .infinity)
-            NavigationLink(destination: LibraryMapView(performanceURL: viewModel.parentFolderURL)){}
+            let pURL = viewModel.parentFolderURL.appendingPathComponent(item.name)
+            NavigationLink(destination: LibraryMapView(performanceURL: pURL)){}
             Spacer()
         }
     }
