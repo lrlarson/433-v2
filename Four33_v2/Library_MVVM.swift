@@ -119,6 +119,7 @@ struct FileItemRow: View {
     
     var body: some View {
         HStack {
+            Spacer().frame(width: 20)
             Text(item.name)
                 .font(.subheadline)
                 .frame(minWidth: 190, maxWidth: .infinity, alignment: .leading)
