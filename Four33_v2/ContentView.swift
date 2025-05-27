@@ -21,6 +21,7 @@ struct appConstants {
     static let WAV_FORMAT_EXTENSION = ".wav"
 
     static let LOCATION_NOT_RECORDED = "not recorded"
+    static let NO_LOCATION_DEGREES = -9999.0
 
     static let BLUE_FOR_LOGO = "007AFF"
 

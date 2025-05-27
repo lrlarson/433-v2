@@ -18,16 +18,19 @@ struct LibraryMapView: View {
     var performanceURL: URL
         
     // State properties to store the loaded data
-    @State private var coordinate: CLLocationCoordinate2D?
+    @State private var mapCoordinate: CLLocationCoordinate2D?
     @State private var position: MapCameraPosition = .automatic
     @State private var perfTitle: String = ""
     @State private var recorded: String = ""
+    @State private var displayRenameAlert: Bool = false
+    @State private var locationText: String = ""
+    @State private var isHidden: Bool = true
     
     var body: some View {
         
         NavigationView {
             ZStack {
-                if let coordinate = coordinate {
+                if let coordinate = mapCoordinate {
                     Map(position: $position) {
                         // Add a marker at the specified coordinate
                         Marker("", coordinate: coordinate)
@@ -41,10 +44,19 @@ struct LibraryMapView: View {
                             span: MKCoordinateSpan(latitudeDelta: 5.0, longitudeDelta: 5.0)
                         ))
                     }
+                    .alert("Rename performance", isPresented: $displayRenameAlert) {
+                        TextField("New name", text:$perfTitle)
+                            .disableAutocorrection(true)
+                            .onChange(of: perfTitle) { perfTitle = Files.trimPerfName(name: perfTitle) }
+                        Button("OK", action: renamePerformance)
+                        Button("Cancel", role: .cancel) { }
+                    } message: {
+                        Text("Enter new name for performance:")
+                    }
+                } else {
+                    Text(locationText)
                 }
-                else {
-                    Text("No location data recorded.")
-                }
+
                 
                 VStack {
                     Spacer()
@@ -54,12 +66,33 @@ struct LibraryMapView: View {
                         .background(RoundedRectangle(cornerRadius: 5)
                             .fill(Color.black))
                     Spacer()
+                    HStack {
+                        Button(action: {}) {
+                            Text("Play")
+                            Image("play_wht-512")
+                                .resizable()
+                                .frame(width: 40.0, height: 48.0)
+                        }
+                        .frame(width: 90 as CGFloat)
+                        Spacer().frame(width: 20 as CGFloat)
+                        Button("Rename"){
+                            displayRenameAlert = true
+                        }
+                        Spacer()
+                        Button("Upload"){ }
+                    }
+                    .frame(width: 300 as CGFloat, height: 40 as CGFloat, alignment: .center)
+                    .padding([.leading, .trailing], 20)
+                    .padding([.top, .bottom], 8)
+                    .background(RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.black))
+                   Spacer().frame(height: 20)
                 }
                 
             }
             .navigationTitle(perfTitle)
             .navigationBarTitleDisplayMode(.inline)
-
+            .opacity(isHidden ? 0 : 1)
         }
         .task {
             await loadLocationData()
@@ -69,21 +102,26 @@ struct LibraryMapView: View {
     private func loadLocationData() async {
         
         do {
+            var latitude: Double = appConstants.NO_LOCATION_DEGREES
+            var longitude: Double = appConstants.NO_LOCATION_DEGREES
             // Read geohash from metadata file
             let metadata = Files.readMetaDataFromURL(url: performanceURL.appendingPathComponent(Files.metadataFilename))
             if (metadata!.geohash == appConstants.LOCATION_NOT_RECORDED)
             {
-                return
+                locationText = "Location not recorded"
+            } else {
+                latitude = GeoHash.area(forHash: metadata!.geohash).latitude.max as! Double
+                longitude = GeoHash.area(forHash: metadata!.geohash).longitude.max as! Double
             }
-            let latitude = GeoHash.area(forHash: metadata!.geohash).latitude.max as! Double
-            let longitude = GeoHash.area(forHash: metadata!.geohash).longitude.max as! Double
 
             // Update the UI on main thread
             await MainActor.run {
-                self.coordinate = CLLocationCoordinate2D(
-                    latitude: latitude,
-                    longitude: longitude
-                )
+                if (latitude != appConstants.NO_LOCATION_DEGREES) {
+                    self.mapCoordinate = CLLocationCoordinate2D(
+                        latitude: latitude,
+                        longitude: longitude
+                    )
+                }
                 
                 if (metadata != nil) {
                     self.perfTitle = metadata!.title
@@ -102,6 +140,12 @@ struct LibraryMapView: View {
                 }
             }
         }
+        isHidden = false;
+    }
+    
+    private func renamePerformance() {
+        // Rename both the folder containing the performance
+        //  AND the peformance name in the metadata
     }
 }
         

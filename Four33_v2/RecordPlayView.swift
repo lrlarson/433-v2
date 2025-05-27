@@ -18,10 +18,10 @@ struct RecordPlayView: View {
     let saveRecordingPrompt = "If you would like to save this recording, enter a name for it. This is your only chance to save it!"
     let recInterruptedNamePrompt = "Recording was interrupted. If you would like to save the partial recording, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'."
     let duplicateNamePrompt = "A recording by that name already exists. Please try another."
-
+    
     var body: some View {
         VStack {
-            Text(viewModel.pieceName)
+            Text(viewModel.perfName)
                 .padding(.bottom, 20.0)
                 .font(.system(size: 20))
             HStack() {
@@ -47,7 +47,7 @@ struct RecordPlayView: View {
                         .font(.system(size: 20))
                 }
             }
- 
+            
             VStack {
                 MovementProgressView(label_text:"Movement I", bar_length:52, prog_val:viewModel.move1prog)
                 MovementProgressView(label_text:"Movement II", bar_length:250, prog_val:viewModel.move2prog)
@@ -63,7 +63,7 @@ struct RecordPlayView: View {
                 }
                 
                 recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback, disabled:false)
-    
+                
                 if (viewModel.piece_playing && !viewModel.piece_paused) {
                     recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.pausePlaying, disabled:viewModel.piece_recording)
                 } else {
@@ -78,23 +78,23 @@ struct RecordPlayView: View {
             
             .alert("Location permission needed", isPresented: $viewModel.displayLocationPermissionAlert) {
             } message: {
-                Text("If you wish to share your performances with the World of 4'33\", you will need to go to Settings/Privacy & Security/Location Services\nand enable this app.")
+                Text("You won't be able to share this performance, because Location Services are not enabled. If you wish to share subsequent performances with the World of 4'33\", you will need to go to Settings/Privacy & Security/Location Services\nand enable this app.")
             }
             
             .alert("Save partial recording?", isPresented: $viewModel.displayPartialRecordingAlert) {
-                TextField("Recording Name", text: $viewModel.pieceName)
+                TextField("Recording Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: viewModel.pieceName) { trimName() }
+                    .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName ) }
                 Button("OK", action: viewModel.finishSave)
-                Button("Cancel", role: .cancel) { }
+                Button("Cancel", role: .cancel) {}
             } message: {
                 Text(recInterruptedNamePrompt)
             }
-
+            
             .alert("Please enter a valid name", isPresented: $viewModel.displayValidNameAlert) {
-                TextField("Recording Name", text: $viewModel.pieceName)
+                TextField("Recording Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: viewModel.pieceName) { trimName() }
+                    .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
                 Button("OK", action: viewModel.finishSave)
                 Button("Cancel", role: .cancel) { }
             } message: {
@@ -102,9 +102,9 @@ struct RecordPlayView: View {
             }
             
             .alert("Duplicate name", isPresented: $viewModel.displayDuplicateNameAlert) {
-                TextField("Recording Name", text: $viewModel.pieceName)
+                TextField("Recording Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: viewModel.pieceName) { trimName() }
+                    .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName)  }
                 Button("OK", action: viewModel.finishSave)
                 Button("Cancel", role: .cancel) { }
             } message: {
@@ -112,9 +112,9 @@ struct RecordPlayView: View {
             }
             
             .alert("Save recording", isPresented: $viewModel.displaySaveRecordingAlert) {
-                TextField("Recording Name", text: $viewModel.pieceName)
+                TextField("Recording Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: viewModel.pieceName) { trimName() }
+                    .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
                 Button("OK", action: viewModel.finishSave)
                 Button("Cancel", role: .cancel) { }
             } message: {
@@ -127,15 +127,7 @@ struct RecordPlayView: View {
             //if (viewModel.audioRecorder?.isRecording || viewModel.audioRecorder?.isPlaying)
             //viewModel.disableAutolock()
         }
-
     }
-    
-    func trimName () {
-        if viewModel.pieceName.count > appConstants.MAX_RECORDNAME_LENGTH {
-            viewModel.pieceName = String(viewModel.pieceName.prefix(appConstants.MAX_RECORDNAME_LENGTH))
-        }
-    }
-
 }
 
 struct recordButtonView: View {
@@ -197,8 +189,8 @@ struct CellView: View {
                 .opacity(Double(cell) <= Double(numCells) - level * Double(numCells) ? 0.32 : 1)
         }//.frame(maxWidth: 100, maxHeight: 30, alignment: .center)
         .animation(cell == 1 ? .easeIn(duration: Double(numCells + 1 - cell) == level * Double(numCells) ?
-                                                0 : 0.2).delay(Double(numCells + 1 - cell) == level * Double(numCells) ?
-                                                               0 : 0.5) : .none, value: level)
+                                       0 : 0.2).delay(Double(numCells + 1 - cell) == level * Double(numCells) ?
+                                                      0 : 0.5) : .none, value: level)
     }
 }
 
@@ -225,7 +217,7 @@ struct MovementProgressView: View {
 
 
 /*
-#Preview {
-    RecordPlayView(eventType: <#timerEvent#>, percentProgress: <#Double#>, pieceElapsed: <#CFTimeInterval#>, movementSecondsRemaining: <#CFTimeInterval#>)
-}
-*/
+ #Preview {
+ RecordPlayView(eventType: <#timerEvent#>, percentProgress: <#Double#>, pieceElapsed: <#CFTimeInterval#>, movementSecondsRemaining: <#CFTimeInterval#>)
+ }
+ */

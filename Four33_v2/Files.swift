@@ -234,6 +234,14 @@ enum Files {
             return nil
         }
     }
+    
+    // Trim any leading whitespace, and any characters beyond max length
+    // called during input of performance name
+    static func trimPerfName(name:String) -> String {
+        return String(name.drop(while: {$0.isWhitespace}).prefix(appConstants.MAX_RECORDNAME_LENGTH))
+    }
+    
+}
 
     
         /*
@@ -251,7 +259,6 @@ enum Files {
         [self updateMetadataWithDateTime:metadataDateTime];
         //NSLog (@"metadata datetime: %@", metadataDateTime );
         */
-    }
 
 
 

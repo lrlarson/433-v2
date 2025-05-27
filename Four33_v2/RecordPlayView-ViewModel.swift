@@ -45,7 +45,7 @@ extension RecordPlayView {
         var recordingNeedsSaving = false
         var currentPlayMovement:Int = 0
         
-        var pieceName = ""
+        var perfName = ""
         
         var displayMicPermissionAlert = false
         var displayLocationPermissionAlert = false
@@ -274,7 +274,7 @@ extension RecordPlayView {
                 
                 pieceTimer?.startOrRestartPieceTimer()
                 
-                pieceName = ""
+                perfName = ""
                 recordMovement(movement: "One")
                 Files.deleteMovement(movement: "Two")
                 Files.deleteMovement(movement: "Three")
@@ -282,12 +282,12 @@ extension RecordPlayView {
         }
         
         func finishSave() {
-            if (pieceName.isEmpty) {
+            if (perfName.isEmpty) {
                 displayValidNameAlert = true
                 return
             }
             do {
-                try Files.saveRecording(name: pieceName, metadata: metadata)
+                try Files.saveRecording(name: perfName, metadata: metadata)
                 recordingNeedsSaving = false
             } catch {
                 switch error {

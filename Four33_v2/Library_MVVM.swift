@@ -230,7 +230,7 @@ extension LibraryView {
         func completeDelete(at offsets: IndexSet)
         {
             displayDeleteAlert = false
-            let filesToDelete = offsets.map { sortedItems[$0] }
+            let filesToDelete = offsets.map { fileItems[$0] }
             var indicesToRemove = IndexSet()
             let fileManager = FileManager.default
             // Try to delete each file
