@@ -71,7 +71,6 @@ struct LibraryView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                Spacer(minLength: 16)
             }
             .padding(.horizontal)
             .padding(.bottom, 0)
@@ -84,8 +83,12 @@ struct LibraryView: View {
                 }.onDelete { indexSet in
                     itemsToDelete = indexSet
                     for (index) in (indexSet) {
-                        viewModel.displayDeleteAlert = true
                         viewModel.deleteFileName = viewModel.fileItems[index].name
+                        if (Files.isSeedRecording(name: viewModel.deleteFileName!)) {
+                            viewModel.displaySeedRecordingAlert = true
+                        } else {
+                            viewModel.displayDeleteAlert = true
+                        }
                     }
                 }
 
@@ -110,6 +113,11 @@ struct LibraryView: View {
         } message: {
             Text("Are you sure you want to delete the recording \"\(viewModel.deleteFileName ?? "")\"?")
         }
+        .alert("Built-in performance", isPresented: $viewModel.displaySeedRecordingAlert) {
+            Button("OK") { }
+        } message: {
+            Text("This performance is built-in to the app and cannot be deleted, renamed, or uploaded.")
+        }
     }
 }
 
@@ -122,14 +130,16 @@ struct FileItemRow: View {
             Spacer().frame(width: 20)
             Text(item.name)
                 .font(.subheadline)
-                .frame(minWidth: 190, maxWidth: .infinity, alignment: .leading)
-            Spacer(minLength: 80)
+                .frame(minWidth: 220, maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: 50)
             let displayableDate = item.creationDate.formatted(date: .numeric, time: .omitted)
             Text("\(displayableDate)")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .frame(minWidth: 100, maxWidth: .infinity)
-            let pURL = viewModel.parentFolderURL.appendingPathComponent(item.name)
+            let pURL = (Files.isSeedRecording(name: item.name)) ?
+                    Bundle.main.resourceURL!.appending(path:appConstants.SEED_RECORDING, directoryHint: .isDirectory) :
+                    viewModel.parentFolderURL.appendingPathComponent(item.name)
             NavigationLink(destination: LibraryMapView(performanceURL: pURL)){}
             Spacer()
         }
@@ -147,6 +157,7 @@ extension LibraryView {
         var fileItems: [PFileItem] = []
         var sortOrder: SortOrder = .dateDescending   // default sort: newest first
         var displayDeleteAlert: Bool = false
+        var displaySeedRecordingAlert: Bool = false
         var deleteURL : URL? = nil
         var isLoading = false
         var errorMessage: String? = nil
@@ -217,6 +228,11 @@ extension LibraryView {
                     }
                 }
                 
+                // Add the permanent recording to the list
+                let seed_recording_date = Files.strToDate(dateStr: appConstants.SEED_RECORDING_DATE)
+                let item = PFileItem(name: appConstants.SEED_RECORDING_DISPLAY_NAME, creationDate: seed_recording_date!)
+                fileItems.append(item)
+                
                 // Update the UI (already on MainActor)
                 self.isLoading = false
             } catch {
@@ -238,7 +254,7 @@ extension LibraryView {
                 deleteURL = parentFolderURL.appendingPathComponent(fileURL.name)
                 if (deleteURL != nil)
                 {
-                do {
+                    do {
                         try fileManager.removeItem(at: deleteURL!)
                         indicesToRemove.insert(index)
                     } catch {

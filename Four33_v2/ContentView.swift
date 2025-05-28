@@ -24,6 +24,10 @@ struct appConstants {
     static let NO_LOCATION_DEGREES = -9999.0
 
     static let BLUE_FOR_LOGO = "007AFF"
+    
+    static let SEED_RECORDING = "Seed_Recording"
+    static let SEED_RECORDING_DATE = "20131107"
+    static let SEED_RECORDING_DISPLAY_NAME = "Cage\'s NYC Apartment"
 
     // The geohash part of the UID has this much resolution (7 = neighborhood level)
     static let GEOHASH_DIGITS_FOR_UID  = 7

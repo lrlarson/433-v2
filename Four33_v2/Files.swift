@@ -241,6 +241,42 @@ enum Files {
         return String(name.drop(while: {$0.isWhitespace}).prefix(appConstants.MAX_RECORDNAME_LENGTH))
     }
     
+    
+    static func isSeedRecording(name:String) -> Bool {
+        return name == appConstants.SEED_RECORDING_DISPLAY_NAME
+    }
+    
+    
+    static func strToDateAndTime(dateStr: String) -> Date? {
+        let calendar = Calendar.current
+        var components = DateComponents()
+        components.year = Int(dateStr.prefix(4))
+        components.month = Int(dateStr.dropFirst(4).prefix(2))
+        components.day = Int(dateStr.dropFirst(6).prefix(2))
+        components.hour = Int(dateStr.dropFirst(8).prefix(2))
+        components.minute = Int(dateStr.dropFirst(10).prefix(2))
+        components.second = Int(dateStr.dropFirst(12).prefix(2))
+        if let pdate = calendar.date(from: components) {
+            return pdate
+        } else {
+            return nil
+        }
+    }
+    
+    
+    static func strToDate(dateStr: String) -> Date? {
+        let calendar = Calendar.current
+        var components = DateComponents()
+        components.year = Int(dateStr.prefix(4))
+        components.month = Int(dateStr.dropFirst(4).prefix(2))
+        components.day = Int(dateStr.dropFirst(6).prefix(2))
+        if let pdate = calendar.date(from: components) {
+            return pdate
+        } else {
+            return nil
+        }
+    }
+    
 }
 
     

@@ -15,7 +15,7 @@ struct LocationData: Codable {
 }
 
 struct LibraryMapView: View {
-    var performanceURL: URL
+    let performanceURL: URL
         
     // State properties to store the loaded data
     @State private var mapCoordinate: CLLocationCoordinate2D?
@@ -23,6 +23,7 @@ struct LibraryMapView: View {
     @State private var perfTitle: String = ""
     @State private var recorded: String = ""
     @State private var displayRenameAlert: Bool = false
+    @State private var displaySeedRecordingAlert: Bool = false
     @State private var locationText: String = ""
     @State private var isHidden: Bool = true
     
@@ -53,6 +54,11 @@ struct LibraryMapView: View {
                     } message: {
                         Text("Enter new name for performance:")
                     }
+                    .alert("Built-in performance", isPresented: $displaySeedRecordingAlert) {
+                        Button("OK") { }
+                    } message: {
+                        Text("This recording is built-in to the app and cannot be deleted or renamed.")
+                    }
                 } else {
                     Text(locationText)
                 }
@@ -62,9 +68,10 @@ struct LibraryMapView: View {
                     Spacer()
                         .frame(height: 20)
                     Text("Recorded: \(recorded)")
+                        .font(.system(size: 16))
                         .padding(10)
                         .background(RoundedRectangle(cornerRadius: 5)
-                            .fill(Color.black))
+                        .fill(Color.black))
                     Spacer()
                     HStack {
                         Button(action: {}) {
@@ -76,7 +83,11 @@ struct LibraryMapView: View {
                         .frame(width: 90 as CGFloat)
                         Spacer().frame(width: 20 as CGFloat)
                         Button("Rename"){
-                            displayRenameAlert = true
+                            if (Files.isSeedRecording(name: perfTitle)) {
+                                displaySeedRecordingAlert = true
+                            } else {
+                                displayRenameAlert = true
+                            }
                         }
                         Spacer()
                         Button("Upload"){ }
@@ -105,7 +116,8 @@ struct LibraryMapView: View {
             var latitude: Double = appConstants.NO_LOCATION_DEGREES
             var longitude: Double = appConstants.NO_LOCATION_DEGREES
             // Read geohash from metadata file
-            let metadata = Files.readMetaDataFromURL(url: performanceURL.appendingPathComponent(Files.metadataFilename))
+            let metadataURL = performanceURL.appending(path:Files.metadataFilename, directoryHint: .notDirectory)
+            let metadata = Files.readMetaDataFromURL(url: metadataURL)
             if (metadata!.geohash == appConstants.LOCATION_NOT_RECORDED)
             {
                 locationText = "Location not recorded"
@@ -125,18 +137,8 @@ struct LibraryMapView: View {
                 
                 if (metadata != nil) {
                     self.perfTitle = metadata!.title
-                    let calendar = Calendar.current
-                    let dateCompacted = metadata!.created
-                    var components = DateComponents()
-                    components.year = Int(dateCompacted.prefix(4))
-                    components.month = Int(dateCompacted.dropFirst(4).prefix(2))
-                    components.day = Int(dateCompacted.dropFirst(6).prefix(2))
-                    components.hour = Int(dateCompacted.dropFirst(8).prefix(2))
-                    components.minute = Int(dateCompacted.dropFirst(10).prefix(2))
-                    components.second = Int(dateCompacted.dropFirst(12).prefix(2))
-                    if let pdate = calendar.date(from: components) {
-                        recorded = pdate.formatted( date: .long, time: .shortened)
-                    }
+                    let dateStr = metadata!.created
+                    recorded = Files.strToDateAndTime(dateStr: dateStr)?.formatted( date: .long, time: .shortened) ?? ""
                 }
             }
         }
