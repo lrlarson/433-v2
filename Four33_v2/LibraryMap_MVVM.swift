@@ -23,7 +23,7 @@ struct LibraryMapView: View {
     @State private var perfTitle: String = ""
     @State private var recorded: String = ""
     @State private var displayRenameAlert: Bool = false
-    @State private var displaySeedRecordingAlert: Bool = false
+    @State private var displaySeedRecAlert: Bool = false
     @State private var locationText: String = ""
     @State private var isHidden: Bool = true
     
@@ -49,12 +49,12 @@ struct LibraryMapView: View {
                         TextField("New name", text:$perfTitle)
                             .disableAutocorrection(true)
                             .onChange(of: perfTitle) { perfTitle = Files.trimPerfName(name: perfTitle) }
-                        Button("OK", action: renamePerformance)
+                        Button("OK", action: { renamePerformance(newName: perfTitle) })
                         Button("Cancel", role: .cancel) { }
                     } message: {
                         Text("Enter new name for performance:")
                     }
-                    .alert("Built-in performance", isPresented: $displaySeedRecordingAlert) {
+                    .alert("Built-in performance", isPresented: $displaySeedRecAlert) {
                         Button("OK") { }
                     } message: {
                         Text("This recording is built-in to the app and cannot be deleted or renamed.")
@@ -82,13 +82,13 @@ struct LibraryMapView: View {
                         }
                         .frame(width: 90 as CGFloat)
                         Spacer().frame(width: 20 as CGFloat)
-                        Button("Rename"){
+                        Button("Rename", action: {
                             if (Files.isSeedRecording(name: perfTitle)) {
-                                displaySeedRecordingAlert = true
+                                displaySeedRecAlert = true
                             } else {
                                 displayRenameAlert = true
                             }
-                        }
+                        })
                         Spacer()
                         Button("Upload"){ }
                     }
@@ -145,7 +145,8 @@ struct LibraryMapView: View {
         isHidden = false;
     }
     
-    private func renamePerformance() {
+    private func renamePerformance(newName: String) {
+        let glebba = newName
         // Rename both the folder containing the performance
         //  AND the peformance name in the metadata
     }
