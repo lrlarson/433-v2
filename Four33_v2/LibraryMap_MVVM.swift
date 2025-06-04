@@ -15,8 +15,10 @@ struct LocationData: Codable {
 }
 
 struct LibraryMapView: View {
+    let viewModel: LV_ViewModel
+    let parentFolderURL: URL
     let performanceURL: URL
-        
+    
     // State properties to store the loaded data
     @State private var mapCoordinate: CLLocationCoordinate2D?
     @State private var position: MapCameraPosition = .automatic
@@ -45,11 +47,20 @@ struct LibraryMapView: View {
                             span: MKCoordinateSpan(latitudeDelta: 5.0, longitudeDelta: 5.0)
                         ))
                     }
+                } else {
+                    Text(locationText)
+                }
+                Text("")
                     .alert("Rename performance", isPresented: $displayRenameAlert) {
+                        let oldName = perfTitle
                         TextField("New name", text:$perfTitle)
                             .disableAutocorrection(true)
                             .onChange(of: perfTitle) { perfTitle = Files.trimPerfName(name: perfTitle) }
-                        Button("OK", action: { renamePerformance(newName: perfTitle) })
+                        Button(action: {
+                            Task {
+                                await renamePerformance(oldName: oldName, newName: perfTitle)
+                            }
+                        }, label: {Text("OK")})
                         Button("Cancel", role: .cancel) { }
                     } message: {
                         Text("Enter new name for performance:")
@@ -57,12 +68,10 @@ struct LibraryMapView: View {
                     .alert("Built-in performance", isPresented: $displaySeedRecAlert) {
                         Button("OK") { }
                     } message: {
-                        Text("This recording is built-in to the app and cannot be deleted or renamed.")
+                        Text("This performance is built-in to the app and cannot be deleted, renamed, or uploaded.")
                     }
-                } else {
-                    Text(locationText)
-                }
-
+                
+                
                 
                 VStack {
                     Spacer()
@@ -71,7 +80,7 @@ struct LibraryMapView: View {
                         .font(.system(size: 16))
                         .padding(10)
                         .background(RoundedRectangle(cornerRadius: 5)
-                        .fill(Color.black))
+                            .fill(Color.black))
                     Spacer()
                     HStack {
                         Button(action: {}) {
@@ -97,7 +106,7 @@ struct LibraryMapView: View {
                     .padding([.top, .bottom], 8)
                     .background(RoundedRectangle(cornerRadius: 20)
                         .fill(Color.black))
-                   Spacer().frame(height: 20)
+                    Spacer().frame(height: 20)
                 }
                 
             }
@@ -125,7 +134,7 @@ struct LibraryMapView: View {
                 latitude = GeoHash.area(forHash: metadata!.geohash).latitude.max as! Double
                 longitude = GeoHash.area(forHash: metadata!.geohash).longitude.max as! Double
             }
-
+            
             // Update the UI on main thread
             await MainActor.run {
                 if (latitude != appConstants.NO_LOCATION_DEGREES) {
@@ -145,10 +154,30 @@ struct LibraryMapView: View {
         isHidden = false;
     }
     
-    private func renamePerformance(newName: String) {
-        let glebba = newName
-        // Rename both the folder containing the performance
-        //  AND the peformance name in the metadata
+    private func renamePerformance(oldName: String, newName: String) async {
+        //  Update the performance name in the metadata
+        let metadataURL = parentFolderURL.appending(path:oldName, directoryHint: .isDirectory)
+                                         .appending(path:Files.metadataFilename, directoryHint: .notDirectory)
+        var metadata = Files.readMetaDataFromURL(url: metadataURL)
+        metadata!.title = newName
+        do {
+            try Files.writeMetadataToURL(url: metadataURL, metadata: metadata!)
+        } catch {
+            print("Error saving metadata for rename: \(error)")
+        }
+ 
+        // Rename the folder containing the performance
+        let srcURL = parentFolderURL.appendingPathComponent(oldName)
+        let dstURL = parentFolderURL.appendingPathComponent(newName)
+        do {
+            try FileManager.default.moveItem(at: srcURL, to: dstURL) }
+        catch {
+            print("Error renaming performance \(oldName) to \(newName): \(error)")
+            return
+        }
+        
+        // Refresh file list in parent page
+        await viewModel.loadContents()
     }
 }
         

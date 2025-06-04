@@ -15,7 +15,7 @@ struct RecordPlayView: View {
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
-    let saveRecordingPrompt = "If you would like to save this recording, enter a name for it. This is your only chance to save it!"
+    let saveRecordingPrompt = "If you would like to save this performance, enter a name for it. This is your only chance to save it!"
     let recInterruptedNamePrompt = "Recording was interrupted. If you would like to save the partial recording, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'."
     let duplicateNamePrompt = "A recording by that name already exists. Please try another."
     
