@@ -30,20 +30,19 @@ struct PFileItem: Identifiable, Hashable {
 }
 
 
-// MARK: - LibraryView View Model
+// MARK: - LibraryView View Model (also passed to LibraryMapView)
 @Observable @MainActor class LV_ViewModel {
     let parentFolderURL: URL = Files.getDocumentsDirURL()
     
     var fileItems: [PFileItem] = []
-    var sortOrder: SortOrder = .dateDescending   // default sort: newest first
+    var sortColumn: SortColumn = .created
+    var sortOrder: SortOrder = .dateAscending   // default sort: newest first
     var displayDeleteAlert: Bool = false
     var displaySeedRecordingAlert: Bool = false
     var deleteURL : URL? = nil
     var isLoading = false
     var errorMessage: String? = nil
-    var deleteFileName: String? = nil
-    var refreshToggle: Bool = false
-    
+    var deleteFileName: String? = nil    
     
     
     enum SortOrder {
@@ -66,8 +65,8 @@ struct PFileItem: Identifiable, Hashable {
         return sorted
     }
     
-    func changeSort(by column: SortColumn) {
-        switch column {
+    func changeSort() {
+        switch sortColumn {
         case .name:
             sortOrder = (sortOrder == .nameAscending) ? .nameDescending : .nameAscending
         case .created:
@@ -118,12 +117,47 @@ struct PFileItem: Identifiable, Hashable {
             fileItems.append(item)
             
             // Update the UI (already on MainActor)
+            changeSort()
             self.isLoading = false
         } catch {
             // Handle errors (already on MainActor)
             self.errorMessage = "Error loading directory: \(error.localizedDescription)"
             self.isLoading = false
         }
+    }
+    
+    
+    func loadPerformance(name: String) async throws {
+        await loadContents()    // Temp function; replace this
+    }
+    
+    
+    func renamePerformance(oldName: String, newName: String) async {
+        // TODO: check for Seed recording; don't allow rename if yes.
+        
+        //  Update the performance name in the metadata
+        let metadataURL = parentFolderURL.appending(path:oldName, directoryHint: .isDirectory)
+                                         .appending(path:Files.metadataFilename, directoryHint: .notDirectory)
+        var metadata = Files.readMetaDataFromURL(url: metadataURL)
+        metadata!.title = newName
+        do {
+            try Files.writeMetadataToURL(url: metadataURL, metadata: metadata!)
+        } catch {
+            print("Error saving metadata for rename: \(error)")
+        }
+ 
+        // Rename the folder containing the performance
+        let srcURL = parentFolderURL.appendingPathComponent(oldName)
+        let dstURL = parentFolderURL.appendingPathComponent(newName)
+        do {
+            try FileManager.default.moveItem(at: srcURL, to: dstURL) }
+        catch {
+            print("Error renaming performance \(oldName) to \(newName): \(error)")
+            return
+        }
+        
+        // Refresh file list in parent view
+        await loadContents()
     }
     
     
@@ -147,7 +181,6 @@ struct PFileItem: Identifiable, Hashable {
                 }
             }
         }
-        
         fileItems.remove(atOffsets: indicesToRemove)
     }
 }

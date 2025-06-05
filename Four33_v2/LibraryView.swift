@@ -19,7 +19,8 @@ struct LibraryView: View {
             HStack {
                 Spacer(minLength: 16)
                 Button(action: {
-                    viewModel.changeSort(by: .name)
+                    viewModel.sortColumn = .name
+                    viewModel.changeSort()
                 }) {
                     HStack {
                         Text("Name")
@@ -31,7 +32,8 @@ struct LibraryView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Spacer()
                 Button(action: {
-                    viewModel.changeSort(by: .created)
+                    viewModel.sortColumn = .created
+                    viewModel.changeSort()
                 }) {
                     HStack {
                         Text("Created")
@@ -112,8 +114,7 @@ struct FileItemRow: View {
                 .foregroundColor(.secondary)
                 .frame(minWidth: 100, maxWidth: .infinity)
             let pURL = (Files.isSeedRecording(name: item.name)) ?
-            Bundle.main.resourceURL!.appending(path:appConstants.SEED_RECORDING, directoryHint: .isDirectory) :
-            folderURL.appendingPathComponent(item.name)
+            Files.seedRecordingURL() : folderURL.appendingPathComponent(item.name)
             NavigationLink(destination: LibraryMapView(viewModel: viewModel, parentFolderURL: folderURL, performanceURL: pURL)){}
             Spacer()
         }

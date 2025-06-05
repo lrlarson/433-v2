@@ -15,9 +15,9 @@ struct RecordPlayView: View {
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
-    let saveRecordingPrompt = "If you would like to save this performance, enter a name for it. This is your only chance to save it!"
-    let recInterruptedNamePrompt = "Recording was interrupted. If you would like to save the partial recording, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'."
-    let duplicateNamePrompt = "A recording by that name already exists. Please try another."
+    let saveRecordingPrompt = "If you would like to save this performance, enter a name for it.  \n\nNote that this is your only chance to save!"
+    let recInterruptedNamePrompt = "Performance was interrupted. If you would like to save the partial performance, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'. \n\nNote that this is your only chance to save!"
+    let duplicateNamePrompt = "A performance by that name already exists. Please try another."
     
     var body: some View {
         VStack {
@@ -81,42 +81,42 @@ struct RecordPlayView: View {
                 Text("You won't be able to share this performance, because Location Services are not enabled. If you wish to share subsequent performances with the World of 4'33\", you will need to go to Settings/Privacy & Security/Location Services\nand enable this app.")
             }
             
-            .alert("Save partial recording?", isPresented: $viewModel.displayPartialRecordingAlert) {
+            .alert("Save partial performance?", isPresented: $viewModel.displayPartialRecordingAlert) {
                 TextField("Recording Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName ) }
-                Button("OK", action: viewModel.finishSave)
-                Button("Cancel", role: .cancel) {}
+                Button("Save", action: viewModel.finishSave)
+                Button("Delete performance", action: {})
             } message: {
                 Text(recInterruptedNamePrompt)
             }
             
             .alert("Please enter a valid name", isPresented: $viewModel.displayValidNameAlert) {
-                TextField("Recording Name", text: $viewModel.perfName)
+                TextField("Performance Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
-                Button("OK", action: viewModel.finishSave)
+                Button("Save", action: viewModel.finishSave)
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text(recInterruptedNamePrompt)
             }
             
             .alert("Duplicate name", isPresented: $viewModel.displayDuplicateNameAlert) {
-                TextField("Recording Name", text: $viewModel.perfName)
+                TextField("Performance Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName)  }
-                Button("OK", action: viewModel.finishSave)
+                Button("Save", action: viewModel.finishSave)
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text(duplicateNamePrompt)
             }
             
             .alert("Save recording", isPresented: $viewModel.displaySaveRecordingAlert) {
-                TextField("Recording Name", text: $viewModel.perfName)
+                TextField("Performance Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
-                Button("OK", action: viewModel.finishSave)
-                Button("Cancel", role: .cancel) { }
+                Button("Save", action: viewModel.finishSave)
+                Button("Delete performance", role: .cancel) { }
             } message: {
                 Text(saveRecordingPrompt)
             }

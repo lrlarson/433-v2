@@ -246,6 +246,10 @@ enum Files {
         return name == appConstants.SEED_RECORDING_DISPLAY_NAME
     }
     
+    static func seedRecordingURL() -> URL {
+        return Bundle.main.resourceURL!.appending(path:appConstants.SEED_RECORDING, directoryHint: .isDirectory)
+    }
+    
     
     static func strToDateAndTime(dateStr: String) -> Date? {
         let calendar = Calendar.current

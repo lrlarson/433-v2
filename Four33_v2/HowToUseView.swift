@@ -38,7 +38,7 @@ struct HowToUseView: View {
                                         value.scrollTo("playing", anchor: .top)
                                     }
                                 }
-                                Button("\u{2022} Library (saved recordings)") {
+                                Button("\u{2022} Library (saved performances)") {
                                     withAnimation {
                                         value.scrollTo("library", anchor: .top)
                                     }
@@ -53,10 +53,10 @@ struct HowToUseView: View {
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Recording").font(.title)
                                 Text("Select the **Record & Play** tab. Press the **Record** button to start a new performance. Three movements, (of lengths matching David Tudor's 1952 Woodstock, NY première of *4'33\"*) will be recorded, with 10 second breaks in between.")
-                                Text("You may stop the recording at any time -- partial performances are perfectly fine -- but pressing **Record** again will start a new recording. Also note that only complete recordings are accepted for upload to johncage.org.")
+                                Text("You may stop recording at any time -- partial performances are perfectly fine -- but pressing **Record** again will start a new performance. Also note that only complete performances are accepted for upload to johncage.org.")
                                     .fixedSize(horizontal: false, vertical: true)
-                                Text("When the recording is complete (or inadvertently stopped before completion\u{002A}), you will be asked if you wish to save it. This is your only chance to do so; if you choose not to save, it will be erased. Saved recordings may be viewed and loaded on the *Library* screen.")
-                                 Text("\u{002A}A phone call or pre-set alarm, for example, can stop the recording, which then cannot be resumed; however, a partial recording may be saved.")
+                                Text("When the performance is complete (or inadvertently stopped before completion\u{002A}), you will be asked if you wish to save it. This is your only chance to do so; if you choose not to save, it will be erased. Saved performances may be viewed and loaded on the *Library* screen.")
+                                 Text("\u{002A}A phone call or pre-set alarm, for example, can stop the performance, which then cannot be resumed; however, a partial performance may be saved.")
                                 Spacer().frame(height: 20)
                             }.id("recording")
                             VStack(alignment: .leading, spacing: 16) {
@@ -67,19 +67,18 @@ struct HowToUseView: View {
                             }.id("playing")
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Library").font(.title)
-                                Text("This screen lists all the recordings you have saved, and one built-in recording (always listed last, which can't be deleted, renamed or uploaded).")
-                                 Text("Tapping on a recording title displays a window showing where (assuming Location Services are enabled) and when the recording was made. Also on this screen are three buttons:")
+                                Text("This screen lists all the performances you have saved, and one built-in performance (always listed last, which can't be deleted, renamed or uploaded).")
+                                 Text("Tapping on a performance title displays a window showing where (assuming Location Services are enabled) and when the recording was made. Also on this screen are three buttons:")
                                  VStack(spacing: 16) {
                                     Text("Play").font(.title3)
-                                    Text("Press this, and after a brief pause while the selected recording loads, the display will switch to the **Record & Play** screen and begin playback")
+                                    Text("Press this, and after a brief pause while the selected performance loads, the display will switch to the **Record & Play** screen and begin playback")
                                     Text("Rename").font(.title3)
-                                    Text("If you wish to change the name of the currently-selected recording, tap the **Rename** button. You will be prompted for a new name, and returned to the Library, where the new name will be displayed.")
+                                    Text("If you wish to change the name of the currently-selected performance, tap the **Rename** button. You will be prompted for a new name for the performance.")
                                      Text("Upload").font(.title3)
-                                    Text("You may upload your favorite recordings to be shared with the world at [johncage.org](http://www.johncage.org). Note that incomplete recordings or ones with no location information will not be eligible for upload. Tap the **Upload** button, confirm that you wish to upload your recording, then enter your name (or a pseudonym) when prompted. Your recording will then be uploaded to johncage.org. Shortly after that, you should be able to find it on the map of the World of *4'33\"* screen (see below).")
-                                    Text("*Please note that you are responsible for the content of your recordings -- any use of copyrighted or offensive material is not allowed. The Cage Trust reserves the right to remove any recording for any reason.*")
+                                    Text("You may upload your favorite performances to be shared with the world at [johncage.org](http://www.johncage.org). Note that incomplete performance or ones with no location information will not be eligible for upload. Tap the **Upload** button, confirm that you wish to upload your performance, then enter your name (or a pseudonym) when prompted. Your performance will then be uploaded to johncage.org. Shortly after that, you should be able to find it on the map of the World of *4'33\"* screen (see below).")
+                                    Text("*Please note that you are responsible for the content of your performances -- any use of copyrighted or offensive material is not allowed. The Cage Trust reserves the right to remove any performance for any reason.*")
                                  }.padding(30)
                                 Spacer().frame(height: 4)
-                                Text("If you press the **Edit** button at the top of the \"Library\" screen, **delete** buttons will appear by each recording; you can make any desired deletions. Press **Done** to make the **delete** buttons disappear.")
                                 Spacer().frame(height: 20)
                             }.id("library")
                             

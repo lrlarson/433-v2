@@ -30,7 +30,6 @@ struct LibraryMapView: View {
     @State private var isHidden: Bool = true
     
     var body: some View {
-        
         NavigationView {
             ZStack {
                 if let coordinate = mapCoordinate {
@@ -58,7 +57,7 @@ struct LibraryMapView: View {
                             .onChange(of: perfTitle) { perfTitle = Files.trimPerfName(name: perfTitle) }
                         Button(action: {
                             Task {
-                                await renamePerformance(oldName: oldName, newName: perfTitle)
+                                await viewModel.renamePerformance(oldName: oldName, newName: perfTitle)
                             }
                         }, label: {Text("OK")})
                         Button("Cancel", role: .cancel) { }
@@ -83,14 +82,24 @@ struct LibraryMapView: View {
                             .fill(Color.black))
                     Spacer()
                     HStack {
-                        Button(action: {}) {
-                            Text("Play")
+                        Button(action: {
+                            Task {
+                                do {
+                                    try
+                                    await viewModel.loadPerformance(name: perfTitle)
+                                } catch {
+                                    print ("Error loading performance: \(error.localizedDescription)")
+                                }
+                            }
+                        }) {
                             Image("play_wht-512")
                                 .resizable()
                                 .frame(width: 40.0, height: 48.0)
+                            Text("Play")
                         }
                         .frame(width: 90 as CGFloat)
-                        Spacer().frame(width: 20 as CGFloat)
+
+                        Spacer().frame(width: 30 as CGFloat)
                         Button("Rename", action: {
                             if (Files.isSeedRecording(name: perfTitle)) {
                                 displaySeedRecAlert = true
@@ -154,31 +163,6 @@ struct LibraryMapView: View {
         isHidden = false;
     }
     
-    private func renamePerformance(oldName: String, newName: String) async {
-        //  Update the performance name in the metadata
-        let metadataURL = parentFolderURL.appending(path:oldName, directoryHint: .isDirectory)
-                                         .appending(path:Files.metadataFilename, directoryHint: .notDirectory)
-        var metadata = Files.readMetaDataFromURL(url: metadataURL)
-        metadata!.title = newName
-        do {
-            try Files.writeMetadataToURL(url: metadataURL, metadata: metadata!)
-        } catch {
-            print("Error saving metadata for rename: \(error)")
-        }
- 
-        // Rename the folder containing the performance
-        let srcURL = parentFolderURL.appendingPathComponent(oldName)
-        let dstURL = parentFolderURL.appendingPathComponent(newName)
-        do {
-            try FileManager.default.moveItem(at: srcURL, to: dstURL) }
-        catch {
-            print("Error renaming performance \(oldName) to \(newName): \(error)")
-            return
-        }
-        
-        // Refresh file list in parent page
-        await viewModel.loadContents()
-    }
 }
         
         

@@ -286,6 +286,10 @@ extension RecordPlayView {
                 displayValidNameAlert = true
                 return
             }
+            if Files.isSeedRecording(name: perfName) {
+                displayDuplicateNameAlert = true
+                return
+            }
             do {
                 try Files.saveRecording(name: perfName, metadata: metadata)
                 recordingNeedsSaving = false
