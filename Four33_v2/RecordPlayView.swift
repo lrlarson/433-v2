@@ -96,7 +96,7 @@ struct RecordPlayView: View {
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
                 Button("Save", action: viewModel.finishSave)
-                Button("Cancel", role: .cancel) { }
+                Button("Delete performance") { }
             } message: {
                 Text(recInterruptedNamePrompt)
             }
@@ -106,7 +106,7 @@ struct RecordPlayView: View {
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName)  }
                 Button("Save", action: viewModel.finishSave)
-                Button("Cancel", role: .cancel) { }
+                Button("Delete performance") { }
             } message: {
                 Text(duplicateNamePrompt)
             }
@@ -123,9 +123,11 @@ struct RecordPlayView: View {
         }.onDisappear {
             viewModel.reenableAutoLockAfterDelay(seconds: 30)
         }.onAppear {
-            // TODO: fix this (have to get 'isRecording' and 'isPlaying' working correctly)
-            //if (viewModel.audioRecorder?.isRecording || viewModel.audioRecorder?.isPlaying)
-            //viewModel.disableAutolock()
+            // The 'isRecording may be redundant, as metering should be enabled both when playing AND recording
+            if ((viewModel.audioPlayer != nil && viewModel.audioPlayer!.isPlaying) ||
+                    ((viewModel.audioRecorder != nil) && viewModel.audioRecorder!.isRecording)) {
+                viewModel.disableAutolock()
+            }
         }
     }
 }

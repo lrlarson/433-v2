@@ -36,14 +36,16 @@ struct PFileItem: Identifiable, Hashable {
     
     var fileItems: [PFileItem] = []
     var sortColumn: SortColumn = .created
-    var sortOrder: SortOrder = .dateAscending   // default sort: newest first
+    var sortOrder: SortOrder = .dateDescending   // default sort: newest first
     var displayDeleteAlert: Bool = false
     var displaySeedRecordingAlert: Bool = false
     var deleteURL : URL? = nil
     var isLoading = false
     var errorMessage: String? = nil
-    var deleteFileName: String? = nil    
-    
+    var deleteFileName: String? = nil
+    var displayRenameAlert: Bool = false
+    var displaySeedRecAlert: Bool = false
+ 
     
     enum SortOrder {
         case nameAscending, nameDescending, dateAscending, dateDescending
@@ -53,13 +55,13 @@ struct PFileItem: Identifiable, Hashable {
         let sorted = fileItems.sorted {
             switch sortOrder {
             case .nameAscending:
-                return $0.name < $1.name
-            case .nameDescending:
                 return $0.name > $1.name
+            case .nameDescending:
+                return $0.name < $1.name
             case .dateAscending:
-                return $0.creationDate < $1.creationDate
-            case .dateDescending:
                 return $0.creationDate > $1.creationDate
+            case .dateDescending:
+                return $0.creationDate < $1.creationDate
             }
         }
         return sorted
@@ -143,6 +145,8 @@ struct PFileItem: Identifiable, Hashable {
         do {
             try Files.writeMetadataToURL(url: metadataURL, metadata: metadata!)
         } catch {
+            // TODO: need better error handling;
+            //  post alert about duplicate name
             print("Error saving metadata for rename: \(error)")
         }
  

@@ -21,9 +21,9 @@ extension RecordPlayView {
         private var locationManager = LocationManager()
         private var pieceTimer:PieceTimer?
         private var meterTimer:Timer? = nil
-        private var audioPlayer:AVAudioPlayer?
-        private var audioRecorder:AVAudioRecorder?
         private var secondsLeftInMovement = 0
+        var audioPlayer:AVAudioPlayer?
+        var audioRecorder:AVAudioRecorder?
         
         var meterLevel: Double = 0.0      // Audio meter
         var move1prog:CGFloat = 0.0

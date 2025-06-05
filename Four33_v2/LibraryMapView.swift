@@ -15,7 +15,7 @@ struct LocationData: Codable {
 }
 
 struct LibraryMapView: View {
-    let viewModel: LV_ViewModel
+    @State var viewModel: LV_ViewModel
     let parentFolderURL: URL
     let performanceURL: URL
     
@@ -24,8 +24,6 @@ struct LibraryMapView: View {
     @State private var position: MapCameraPosition = .automatic
     @State private var perfTitle: String = ""
     @State private var recorded: String = ""
-    @State private var displayRenameAlert: Bool = false
-    @State private var displaySeedRecAlert: Bool = false
     @State private var locationText: String = ""
     @State private var isHidden: Bool = true
     
@@ -50,7 +48,7 @@ struct LibraryMapView: View {
                     Text(locationText)
                 }
                 Text("")
-                    .alert("Rename performance", isPresented: $displayRenameAlert) {
+                    .alert("Rename performance", isPresented: $viewModel.displayRenameAlert) {
                         let oldName = perfTitle
                         TextField("New name", text:$perfTitle)
                             .disableAutocorrection(true)
@@ -64,7 +62,7 @@ struct LibraryMapView: View {
                     } message: {
                         Text("Enter new name for performance:")
                     }
-                    .alert("Built-in performance", isPresented: $displaySeedRecAlert) {
+                    .alert("Built-in performance", isPresented: $viewModel.displaySeedRecAlert) {
                         Button("OK") { }
                     } message: {
                         Text("This performance is built-in to the app and cannot be deleted, renamed, or uploaded.")
@@ -102,9 +100,9 @@ struct LibraryMapView: View {
                         Spacer().frame(width: 30 as CGFloat)
                         Button("Rename", action: {
                             if (Files.isSeedRecording(name: perfTitle)) {
-                                displaySeedRecAlert = true
+                                viewModel.displaySeedRecAlert = true
                             } else {
-                                displayRenameAlert = true
+                                viewModel.displayRenameAlert = true
                             }
                         })
                         Spacer()
