@@ -67,14 +67,14 @@ struct HowToUseView: View {
                             }.id("playing")
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Library").font(.title)
-                                Text("This screen lists all the performances you have saved, and one built-in performance (always listed last, which can't be deleted, renamed or uploaded).")
+                                Text("This screen lists all the performances you have saved, and one built-in performance (\"Cage's NYC Apartment\", which can't be deleted, renamed or uploaded).")
                                  Text("Tapping on a performance title displays a window showing where (assuming Location Services are enabled) and when the recording was made. Also on this screen are three buttons:")
                                  VStack(spacing: 16) {
                                     Text("Play").font(.title3)
                                     Text("Press this, and after a brief pause while the selected performance loads, the display will switch to the **Record & Play** screen and begin playback")
                                     Text("Rename").font(.title3)
                                     Text("If you wish to change the name of the currently-selected performance, tap the **Rename** button. You will be prompted for a new name for the performance.")
-                                     Text("Upload").font(.title3)
+                                    Text("Upload").font(.title3)
                                     Text("You may upload your favorite performances to be shared with the world at [johncage.org](http://www.johncage.org). Note that incomplete performance or ones with no location information will not be eligible for upload. Tap the **Upload** button, confirm that you wish to upload your performance, then enter your name (or a pseudonym) when prompted. Your performance will then be uploaded to johncage.org. Shortly after that, you should be able to find it on the map of the World of *4'33\"* screen (see below).")
                                     Text("*Please note that you are responsible for the content of your performances -- any use of copyrighted or offensive material is not allowed. The Cage Trust reserves the right to remove any performance for any reason.*")
                                  }.padding(30)

@@ -198,6 +198,16 @@ enum Files {
         }
     }
     
+    static func tempPerformanceExists() -> Bool {
+        let url = currentRecordingMovementURL(movement:"One")
+        return fileManager.fileExists(atPath: url.path)
+    }
+    
+    static func performanceExistsSaved(perfName:String) -> Bool {
+        let url = getDocumentsDirURL().appending(path: perfName)
+        return fileManager.fileExists(atPath: url.path)
+    }
+    
     static func currentRecordingMovementURL(movement:String) -> URL {
         return getCurrentRecordingURL()
             .appending(path: getMovementFileName(movement: movement))

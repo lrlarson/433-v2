@@ -68,7 +68,7 @@ struct RecordPlayView: View {
                 if (viewModel.piece_playing && !viewModel.piece_paused) {
                     recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.pausePlaying, disabled:viewModel.piece_recording)
                 } else {
-                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.play, disabled:viewModel.piece_recording)
+                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.play, disabled:viewModel.piece_recording || !Files.tempPerformanceExists())
                 }
             }
             
@@ -87,7 +87,7 @@ struct RecordPlayView: View {
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName ) }
                 Button("Save", action: viewModel.finishSave)
-                Button("Delete performance", action: {})
+                Button("Delete performance", action: {viewModel.deletePerformance()})
             } message: {
                 Text(recInterruptedNamePrompt)
             }
@@ -97,7 +97,7 @@ struct RecordPlayView: View {
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
                 Button("Save", action: viewModel.finishSave)
-                Button("Delete performance") { }
+                Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(invalidNamePrompt)
             }
@@ -107,7 +107,7 @@ struct RecordPlayView: View {
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName)  }
                 Button("Save", action: viewModel.finishSave)
-                Button("Delete performance") { }
+                Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(duplicateNamePrompt)
             }
@@ -117,7 +117,7 @@ struct RecordPlayView: View {
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
                 Button("Save", action: viewModel.finishSave)
-                Button("Delete performance") { }
+                Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(saveRecordingPrompt)
             }
@@ -127,6 +127,10 @@ struct RecordPlayView: View {
             if ((viewModel.audioPlayer != nil && viewModel.audioPlayer!.isPlaying) ||
                     ((viewModel.audioRecorder != nil) && viewModel.audioRecorder!.isRecording)) {
                 viewModel.disableAutolock()
+            }
+            // Clear this performance if it has been deleted in the Library
+            if (!Files.performanceExistsSaved(perfName: viewModel.perfName)) {
+                viewModel.deletePerformance()
             }
         }
     }

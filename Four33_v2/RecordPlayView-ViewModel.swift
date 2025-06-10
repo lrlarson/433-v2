@@ -118,7 +118,7 @@ extension RecordPlayView {
                     print ("Interruption ended. Resuming playback.")
                 } else {
                     // An interruption ended. Don't resume playback.
-                    print ("Interrution ended. Not resuming playback.")
+                    print ("Interruption ended. Not resuming playback.")
                 }
                 
             default: ()
@@ -259,8 +259,6 @@ extension RecordPlayView {
 
                 // Set date/time created
                 metadata.created = timeStamp()
-                
-                resetPieceToStart()
                 
                 // Prevent display sleep while recording
                 disableAutolock()
@@ -415,6 +413,14 @@ extension RecordPlayView {
             secondsLeftInMovement = 999999
             reenableAutoLockAfterDelay(seconds: 30)
             intermissionTime = ""
+        }
+        
+        func deletePerformance() {
+            resetPieceToStart()
+            Files.deleteMovement(movement: "One")
+            Files.deleteMovement(movement: "Two")
+            Files.deleteMovement(movement: "Three")
+            perfName = ""
         }
 
 
