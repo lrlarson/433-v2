@@ -22,6 +22,9 @@ struct appConstants {
 
     static let LOCATION_NOT_RECORDED = "not recorded"
     static let NO_LOCATION_DEGREES = -9999.0
+    
+    static let ONLY_CHANCE_TO_SAVE = "\n\nNote that this is your only chance to save!"
+
 
     static let BLUE_FOR_LOGO = "007AFF"
     

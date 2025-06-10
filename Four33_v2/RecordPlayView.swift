@@ -15,9 +15,10 @@ struct RecordPlayView: View {
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
-    let saveRecordingPrompt = "If you would like to save this performance, enter a name for it.  \n\nNote that this is your only chance to save!"
-    let recInterruptedNamePrompt = "Performance was interrupted. If you would like to save the partial performance, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'. \n\nNote that this is your only chance to save!"
-    let duplicateNamePrompt = "A performance by that name already exists. Please try another."
+    let saveRecordingPrompt = "If you would like to save this performance, enter a name for it. .\(appConstants.ONLY_CHANCE_TO_SAVE)"
+    let recInterruptedNamePrompt = "Performance was interrupted. If you would like to save the partial performance, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'.\(appConstants.ONLY_CHANCE_TO_SAVE)"
+    let invalidNamePrompt = "Please enter a valid name for the performance (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'.\(appConstants.ONLY_CHANCE_TO_SAVE)"
+    let duplicateNamePrompt = "A performance by that name already exists. Please try another..\(appConstants.ONLY_CHANCE_TO_SAVE)"
     
     var body: some View {
         VStack {
@@ -98,7 +99,7 @@ struct RecordPlayView: View {
                 Button("Save", action: viewModel.finishSave)
                 Button("Delete performance") { }
             } message: {
-                Text(recInterruptedNamePrompt)
+                Text(invalidNamePrompt)
             }
             
             .alert("Duplicate name", isPresented: $viewModel.displayDuplicateNameAlert) {
@@ -116,14 +117,13 @@ struct RecordPlayView: View {
                     .disableAutocorrection(true)
                     .onChange(of: viewModel.perfName) { viewModel.perfName = Files.trimPerfName(name: viewModel.perfName) }
                 Button("Save", action: viewModel.finishSave)
-                Button("Delete performance", role: .cancel) { }
+                Button("Delete performance") { }
             } message: {
                 Text(saveRecordingPrompt)
             }
         }.onDisappear {
             viewModel.reenableAutoLockAfterDelay(seconds: 30)
         }.onAppear {
-            // The 'isRecording may be redundant, as metering should be enabled both when playing AND recording
             if ((viewModel.audioPlayer != nil && viewModel.audioPlayer!.isPlaying) ||
                     ((viewModel.audioRecorder != nil) && viewModel.audioRecorder!.isRecording)) {
                 viewModel.disableAutolock()

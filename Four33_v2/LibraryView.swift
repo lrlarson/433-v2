@@ -60,7 +60,7 @@ struct LibraryView: View {
                     for (index) in (indexSet) {
                         viewModel.deleteFileName = viewModel.fileItems[index].name
                         if (Files.isSeedRecording(name: viewModel.deleteFileName!)) {
-                            viewModel.displaySeedRecordingAlert = true
+                            viewModel.displaySeedRecAlert = true
                         } else {
                             viewModel.displayDeleteAlert = true
                         }
@@ -88,10 +88,15 @@ struct LibraryView: View {
         } message: {
             Text("Are you sure you want to delete the recording \"\(viewModel.deleteFileName ?? "")\"?")
         }
-        .alert("Built-in performance", isPresented: $viewModel.displaySeedRecordingAlert) {
+        .alert("Built-in performance", isPresented: $viewModel.displaySeedRecAlert) {
             Button("OK") { }
         } message: {
             Text("This performance is built-in to the app and cannot be deleted, renamed, or uploaded.")
+        }
+        .alert("Error", isPresented: $viewModel.displayGeneralAlert) {
+            Button("OK") { }
+        } message: {
+            Text("An error occurred while attempting this operation. " + (viewModel.generalErrorMessage ?? ""))
         }
     }
 }
@@ -112,7 +117,7 @@ struct FileItemRow: View {
             Text("\(displayableDate)")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-                .frame(minWidth: 100, maxWidth: .infinity)
+                .frame(minWidth: 100, maxWidth: .infinity, alignment: .trailing)
             let pURL = (Files.isSeedRecording(name: item.name)) ?
             Files.seedRecordingURL() : folderURL.appendingPathComponent(item.name)
             NavigationLink(destination: LibraryMapView(viewModel: viewModel, parentFolderURL: folderURL, performanceURL: pURL)){}

@@ -37,16 +37,21 @@ struct PFileItem: Identifiable, Hashable {
     var fileItems: [PFileItem] = []
     var sortColumn: SortColumn = .created
     var sortOrder: SortOrder = .dateDescending   // default sort: newest first
-    var displayDeleteAlert: Bool = false
-    var displaySeedRecordingAlert: Bool = false
     var deleteURL : URL? = nil
     var isLoading = false
     var errorMessage: String? = nil
     var deleteFileName: String? = nil
+    var displayDeleteAlert: Bool = false
     var displayRenameAlert: Bool = false
+    var displayDuplicateAlert: Bool = false
     var displaySeedRecAlert: Bool = false
- 
+    var displayGeneralAlert: Bool = false
+    var generalErrorMessage: String? = ""
+    var perfTitle: String = ""
+
     
+    @AppStorage("Recordist")  @ObservationIgnored private var recordistName: String = ""
+ 
     enum SortOrder {
         case nameAscending, nameDescending, dateAscending, dateDescending
     }
@@ -135,31 +140,43 @@ struct PFileItem: Identifiable, Hashable {
     
     
     func renamePerformance(oldName: String, newName: String) async {
-        // TODO: check for Seed recording; don't allow rename if yes.
+        
+        // Can't rename seed recording
+        if (Files.isSeedRecording(name: oldName)) {
+            displaySeedRecAlert = true
+            return
+        }
+        
+        // Rename the folder containing the performance
+        let srcURL = parentFolderURL.appendingPathComponent(oldName)
+        let dstURL = parentFolderURL.appendingPathComponent(newName)
+        do {
+            try FileManager.default.moveItem(at: srcURL, to: dstURL) }
+        catch CocoaError.fileWriteFileExists {
+            perfTitle = oldName
+            displayDuplicateAlert = true
+            return
+        }
+        catch {
+            perfTitle = oldName
+            generalErrorMessage = error.localizedDescription
+            displayGeneralAlert = true
+            return
+        }
         
         //  Update the performance name in the metadata
-        let metadataURL = parentFolderURL.appending(path:oldName, directoryHint: .isDirectory)
+        let metadataURL = parentFolderURL.appending(path:newName, directoryHint: .isDirectory)
                                          .appending(path:Files.metadataFilename, directoryHint: .notDirectory)
         var metadata = Files.readMetaDataFromURL(url: metadataURL)
         metadata!.title = newName
         do {
             try Files.writeMetadataToURL(url: metadataURL, metadata: metadata!)
         } catch {
-            // TODO: need better error handling;
-            //  post alert about duplicate name
-            print("Error saving metadata for rename: \(error)")
-        }
- 
-        // Rename the folder containing the performance
-        let srcURL = parentFolderURL.appendingPathComponent(oldName)
-        let dstURL = parentFolderURL.appendingPathComponent(newName)
-        do {
-            try FileManager.default.moveItem(at: srcURL, to: dstURL) }
-        catch {
-            print("Error renaming performance \(oldName) to \(newName): \(error)")
+            generalErrorMessage = error.localizedDescription
+            displayGeneralAlert = true
             return
         }
-        
+
         // Refresh file list in parent view
         await loadContents()
     }
@@ -186,5 +203,9 @@ struct PFileItem: Identifiable, Hashable {
             }
         }
         fileItems.remove(atOffsets: indicesToRemove)
+    }
+    
+    func saveRecordistToDefaults (recordist: String) {
+        UserDefaults.standard.set(recordist, forKey: "Recordist")
     }
 }

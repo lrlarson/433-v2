@@ -22,7 +22,6 @@ struct LibraryMapView: View {
     // State properties to store the loaded data
     @State private var mapCoordinate: CLLocationCoordinate2D?
     @State private var position: MapCameraPosition = .automatic
-    @State private var perfTitle: String = ""
     @State private var recorded: String = ""
     @State private var locationText: String = ""
     @State private var isHidden: Bool = true
@@ -49,27 +48,25 @@ struct LibraryMapView: View {
                 }
                 Text("")
                     .alert("Rename performance", isPresented: $viewModel.displayRenameAlert) {
-                        let oldName = perfTitle
-                        TextField("New name", text:$perfTitle)
+                        let oldName = viewModel.perfTitle
+                        TextField("New name", text:$viewModel.perfTitle)
                             .disableAutocorrection(true)
-                            .onChange(of: perfTitle) { perfTitle = Files.trimPerfName(name: perfTitle) }
+                            .onChange(of: viewModel.perfTitle) { viewModel.perfTitle = Files.trimPerfName(name: viewModel.perfTitle) }
                         Button(action: {
                             Task {
-                                await viewModel.renamePerformance(oldName: oldName, newName: perfTitle)
+                                await viewModel.renamePerformance(oldName: oldName, newName: viewModel.perfTitle)
                             }
                         }, label: {Text("OK")})
                         Button("Cancel", role: .cancel) { }
                     } message: {
                         Text("Enter new name for performance:")
                     }
-                    .alert("Built-in performance", isPresented: $viewModel.displaySeedRecAlert) {
-                        Button("OK") { }
+                    .alert("Duplicate name", isPresented: $viewModel.displayDuplicateAlert) {
+                        Button(action: {}, label: {Text("OK")})
                     } message: {
-                        Text("This performance is built-in to the app and cannot be deleted, renamed, or uploaded.")
+                        Text("A performance by that name already exists.")
                     }
-                
-                
-                
+
                 VStack {
                     Spacer()
                         .frame(height: 20)
@@ -84,7 +81,7 @@ struct LibraryMapView: View {
                             Task {
                                 do {
                                     try
-                                    await viewModel.loadPerformance(name: perfTitle)
+                                    await viewModel.loadPerformance(name: viewModel.perfTitle)
                                 } catch {
                                     print ("Error loading performance: \(error.localizedDescription)")
                                 }
@@ -99,7 +96,7 @@ struct LibraryMapView: View {
 
                         Spacer().frame(width: 30 as CGFloat)
                         Button("Rename", action: {
-                            if (Files.isSeedRecording(name: perfTitle)) {
+                            if (Files.isSeedRecording(name: viewModel.perfTitle)) {
                                 viewModel.displaySeedRecAlert = true
                             } else {
                                 viewModel.displayRenameAlert = true
@@ -117,7 +114,7 @@ struct LibraryMapView: View {
                 }
                 
             }
-            .navigationTitle(perfTitle)
+            .navigationTitle(viewModel.perfTitle)
             .navigationBarTitleDisplayMode(.inline)
             .opacity(isHidden ? 0 : 1)
         }
@@ -152,7 +149,7 @@ struct LibraryMapView: View {
                 }
                 
                 if (metadata != nil) {
-                    self.perfTitle = metadata!.title
+                    viewModel.perfTitle = metadata!.title
                     let dateStr = metadata!.created
                     recorded = Files.strToDateAndTime(dateStr: dateStr)?.formatted( date: .long, time: .shortened) ?? ""
                 }
