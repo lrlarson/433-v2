@@ -36,7 +36,7 @@ struct PFileItem: Identifiable, Hashable {
     
     var fileItems: [PFileItem] = []
     var sortColumn: SortColumn = .created
-    var sortOrder: SortOrder = .dateDescending   // default sort: newest first
+    var sortOrder: SortOrder = .dateAscending   // default sort: newest first
     var deleteURL : URL? = nil
     var isLoading = false
     var errorMessage: String? = nil
@@ -125,6 +125,7 @@ struct PFileItem: Identifiable, Hashable {
             
             // Update the UI (already on MainActor)
             changeSort()
+            changeSort()    // Double toggle to trigger refresh
             self.isLoading = false
         } catch {
             // Handle errors (already on MainActor)
