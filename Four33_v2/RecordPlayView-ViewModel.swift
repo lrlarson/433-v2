@@ -416,6 +416,9 @@ extension RecordPlayView {
         }
         
         func deletePerformance() {
+            if (audioPlayer != nil && audioPlayer!.isPlaying) {
+                resetRecordPlayback()
+            }
             resetPieceToStart()
             Files.deleteMovement(movement: "One")
             Files.deleteMovement(movement: "Two")
