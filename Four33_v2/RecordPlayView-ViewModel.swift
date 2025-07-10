@@ -201,6 +201,15 @@ extension RecordPlayView {
             return true
         }
         
+        func updateMetadata() {
+            resetPieceToStart()
+            let metadataURL = Files.getTmpDirURL().appending(path: Files.currentRecordingDirectory).appending(path:Files.metadataFilename)
+            let metadata = Files.readMetaDataFromURL(url: metadataURL)
+            if (metadata != nil) {
+                perfName = metadata!.title
+            }
+        }
+        
         // Turn off idle timer (auto lock) (for use while recording)
         func disableAutolock() {
             // Kill any leftover reenable timer events

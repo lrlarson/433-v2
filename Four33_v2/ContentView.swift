@@ -51,26 +51,69 @@ struct appConstants {
 
 import SwiftUI
 
-struct ContentView: View {
-    
-    var body: some View {
-        TabView {
-            Tab("Record and Play", systemImage: "mic.fill") {
-                RecordPlayView()
-            }
-            Tab("Library", systemImage: "folder.fill") {
-                LibraryView()
-            }
-            Tab("World of 4'33", systemImage: "globe") {
-                WorldView()
-            }
-            Tab("Info", systemImage: "info.circle.fill") {
-                InfoView()
-            }
-        }
+// Allow immediate playback to be requested by "load performance" function on Libaray tab
+struct playNowKey: EnvironmentKey {
+    static var defaultValue: Binding<Bool> = .constant(false)
+}
+extension EnvironmentValues {
+    var playNow: Binding<Bool> {
+        get { self[playNowKey.self] }
+        set { self[playNowKey.self] = newValue }
     }
 }
 
-#Preview {
-    ContentView()
+// Enable programmatic tab switching (so loaded performances can switch to record/play screen for playback)
+struct CurrentTabKey: EnvironmentKey {
+    static var defaultValue: Binding<ContentView.Tab> = .constant(.recplay)
+}
+extension EnvironmentValues {
+    var currentTab: Binding<ContentView.Tab> {
+        get { self[CurrentTabKey.self] }
+        set { self[CurrentTabKey.self] = newValue }
+    }
+}
+
+
+
+struct ContentView: View {
+    
+    enum Tab {
+        case recplay
+        case library
+        case world
+        case info
+    }
+    
+    @State private var selectedTab: Tab = .recplay
+    @State private var playNowRequested = false
+    @State private var showAllTabs = true
+    
+    var body: some View {
+        TabView (selection: $selectedTab) {
+            RecordPlayView()
+                .tabItem {
+                    Label("Record & Play", systemImage: "mic.fill")
+                }
+                .tag(Tab.recplay)
+            if (showAllTabs) {
+                LibraryView()
+                    .tabItem {
+                        Label("Library", systemImage: "folder.fill")
+                    }
+                    .tag(Tab.library)
+                    .environment(\.currentTab, $selectedTab)
+                WorldView()
+                    .tabItem {
+                        Label("World of 4'33", systemImage: "globe")
+                    }
+                    .tag(Tab.world)
+                InfoView()
+                    .tabItem {
+                        Label("Info", systemImage: "info.circle.fill")
+                    }
+                    .tag(Tab.info)
+            }
+        }
+        .environment(\.playNow, $playNowRequested)
+    }
 }

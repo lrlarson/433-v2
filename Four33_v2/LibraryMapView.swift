@@ -26,6 +26,9 @@ struct LibraryMapView: View {
     @State private var locationText: String = ""
     @State private var isHidden: Bool = true
     
+    @Environment(\.currentTab) var tab
+    @Environment(\.playNow) var immediatePlay
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -81,7 +84,10 @@ struct LibraryMapView: View {
                             Task {
                                 do {
                                     try
-                                    await viewModel.loadPerformance(name: viewModel.perfTitle)
+                                    viewModel.loadPerformance(name: viewModel.perfTitle)
+                                    // programatically switch to Record/Play tab and start playback
+                                    immediatePlay.wrappedValue = true
+                                    tab.wrappedValue = .recplay
                                 } catch {
                                     print ("Error loading performance: \(error.localizedDescription)")
                                 }
@@ -89,7 +95,7 @@ struct LibraryMapView: View {
                         }) {
                             Image("play_wht-512")
                                 .resizable()
-                                .frame(width: 40.0, height: 48.0)
+                                .frame(width: 30.0, height: 48.0)
                             Text("Play")
                         }
                         .frame(width: 90 as CGFloat)

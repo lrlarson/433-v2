@@ -75,7 +75,7 @@ struct LibraryView: View {
             .font(.custom("HelveticaNeue-Light", size: 18))
         }
         .task {
-            await viewModel.loadContents()
+            await viewModel.loadLibraryContents()
         }
         
         .alert("Delete recording?", isPresented: $viewModel.displayDeleteAlert) {

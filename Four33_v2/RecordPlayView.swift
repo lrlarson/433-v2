@@ -12,6 +12,7 @@ import Combine
 struct RecordPlayView: View {
     
     @State var viewModel = RPV_ViewModel()      // RecordPlayView-ViewModel
+    @Environment(\.playNow) var immediatePlay
     
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
@@ -123,14 +124,23 @@ struct RecordPlayView: View {
             }
         }.onDisappear {
             viewModel.reenableAutoLockAfterDelay(seconds: 30)
+            if (viewModel.audioPlayer != nil && viewModel.audioPlayer!.isPlaying) {
+                viewModel.pausePlaying()
+            }
         }.onAppear {
             if ((viewModel.audioPlayer != nil && viewModel.audioPlayer!.isPlaying) ||
-                    ((viewModel.audioRecorder != nil) && viewModel.audioRecorder!.isRecording)) {
+                ((viewModel.audioRecorder != nil) && viewModel.audioRecorder!.isRecording)) {
                 viewModel.disableAutolock()
             }
             // Clear this performance if it has been deleted in the Library
             if (!Files.performanceExistsSaved(perfName: viewModel.perfName)) {
                 viewModel.deletePerformance()
+            } else {
+                viewModel.updateMetadata()
+                if (immediatePlay.wrappedValue) {
+                    immediatePlay.wrappedValue = false
+                    viewModel.play()
+                }
             }
         }
     }

@@ -30,23 +30,20 @@ enum Files {
     
     static let fileManager = FileManager.default
     
+    static func glebba() {
+    }
+    
     static func clearTempDirectory() throws (FilesError) {
-        var directoryContents: [URL]
-        let tempDir:URL = getTmpDirURL()
         do {
-            directoryContents = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
-        } catch {
-            print ("ClearTempDirectory get dir. contents failed.")
-            throw .getContentsFailed
-        }
-        for t_url in directoryContents {
-            let newURL:URL = tempDir.appending(path:t_url.path())
-            do {
-                try fileManager.removeItem(at:newURL)
-            } catch {
-                print ("ClearTempDirectory delete file failed.")
-                throw .deleteFailed
+            let url = getTmpDirURL()
+            if let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: nil) {
+                while let fileURL = enumerator.nextObject() as? URL {
+                    try fileManager.removeItem(at: fileURL)
+                }
             }
+        }  catch  {
+            print(error)
+            throw .deleteFailed
         }
     }
     
@@ -87,6 +84,30 @@ enum Files {
         }
     }
     
+    // useful for diagnostics
+    fileprivate static func listTmpDir() {
+        // list tmp dir contents
+        var files = [URL]()
+        if let enumerator = FileManager.default.enumerator(at: getTmpDirURL(), includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+            for case let fileURL as URL in enumerator {
+                do {
+                    files.append(fileURL)
+                }
+            }
+            print(files)
+        }
+    }
+    
+    static func loadRecording(name:String) throws (any Error)
+    {
+        try clearTempDirectory()
+        let fromURL = getDocumentsDirURL().appending(path: name, directoryHint: .isDirectory)
+        let toURL = getTmpDirURL().appending(path: name, directoryHint: .isDirectory)
+        try fileManager.copyItem(at: fromURL, to: toURL)
+        try fileManager.moveItem(at: toURL, to: getTmpDirURL().appending(path: currentRecordingDirectory))
+        //listTmpDir()
+    }
+
     // Save the current recording atomically (as possible)*:
     //  First, copy the current recording & metadata to the temp directory;
     //   then, edit the (temp) metadata to reflect the new recording name;

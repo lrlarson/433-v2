@@ -48,7 +48,6 @@ struct PFileItem: Identifiable, Hashable {
     var displayGeneralAlert: Bool = false
     var generalErrorMessage: String? = ""
     var perfTitle: String = ""
-
     
     @AppStorage("Recordist")  @ObservationIgnored private var recordistName: String = ""
  
@@ -91,7 +90,7 @@ struct PFileItem: Identifiable, Hashable {
     
     
     // Load the contents of the current directory
-    func loadContents() async {
+    func loadLibraryContents() async {
         isLoading = true
         errorMessage = nil
         fileItems = []
@@ -135,11 +134,17 @@ struct PFileItem: Identifiable, Hashable {
     }
     
     
-    func loadPerformance(name: String) async throws {
-        await loadContents()    // Temp function; replace this
+    func loadPerformance(name: String) throws {
+        do {
+            // Load a performance atomically
+            try Files.loadRecording(name: name)
+        } catch {
+            switch error {
+            default: print ("Load recording error: ", error)
+            }
+        }
     }
-    
-    
+             
     func renamePerformance(oldName: String, newName: String) async {
         
         // Can't rename seed recording
@@ -179,7 +184,7 @@ struct PFileItem: Identifiable, Hashable {
         }
 
         // Refresh file list in parent view
-        await loadContents()
+        await loadLibraryContents()
     }
     
     
