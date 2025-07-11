@@ -101,7 +101,12 @@ enum Files {
     static func loadRecording(name:String) throws (any Error)
     {
         try clearTempDirectory()
-        let fromURL = getDocumentsDirURL().appending(path: name, directoryHint: .isDirectory)
+        var fromURL: URL!
+        if (isSeedRecording(name: name)) {
+            fromURL = seedRecordingURL()
+        } else {
+            fromURL = getDocumentsDirURL().appending(path: name, directoryHint: .isDirectory)
+        }
         let toURL = getTmpDirURL().appending(path: name, directoryHint: .isDirectory)
         try fileManager.copyItem(at: fromURL, to: toURL)
         try fileManager.moveItem(at: toURL, to: getTmpDirURL().appending(path: currentRecordingDirectory))
