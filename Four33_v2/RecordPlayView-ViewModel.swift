@@ -15,6 +15,15 @@ extension RecordPlayView {
     @Observable
     class RPV_ViewModel : NSObject, AVAudioPlayerDelegate {
         
+        var isRecordingOrPlaying = false {
+            didSet {
+                if let appViewModel = self.appViewModel {
+                    let shouldShowTabs = !isRecordingOrPlaying
+                    appViewModel.shouldShowAllTabs = shouldShowTabs
+                }
+            }
+        }
+        
         private var autoLockReenableTimer:Timer? = nil
         
         private var metadata = RecordingMetaData()
@@ -53,6 +62,7 @@ extension RecordPlayView {
         var displayValidNameAlert = false
         var displayDuplicateNameAlert = false
         var displaySaveRecordingAlert = false
+
         
         override init() {
             super.init()
@@ -78,6 +88,17 @@ extension RecordPlayView {
             setupNotifications()    // subscribe to notifications for audio interruption
         }
         
+        
+        // MARK: - Set up tab visisbility binding
+        private weak var appViewModel: AppViewModel?
+        func setupTabVisibilityBinding(appViewModel: AppViewModel) {
+            self.appViewModel = appViewModel
+            // Initial setup
+            let shouldShowTabs = !isRecordingOrPlaying
+            appViewModel.shouldShowAllTabs = shouldShowTabs
+        }
+        
+
         // MARK: - AVAudioPlayerDelegate
         func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
             if (secondsLeftInMovement > 2) {
@@ -278,6 +299,7 @@ extension RecordPlayView {
                 piece_recording = true
                 recordingDone = false
                 recordingNeedsSaving = true
+                isRecordingOrPlaying = true     // this is connected to the tab bar, and hides all other tabs
                 
                 pieceTimer?.startOrRestartPieceTimer()
                 
@@ -331,6 +353,7 @@ extension RecordPlayView {
                 //  (as opposed to pressing it during 'intermission')
                 stopRecording()
                 recordingDone = true
+                isRecordingOrPlaying = false // reenable all tabs
             }
             
             pieceTimer?.killTimer()
@@ -345,7 +368,7 @@ extension RecordPlayView {
             stopAudioMetering()
             audioRecorder?.stop()
             audioRecorder = nil
-        }
+       }
         
         func play() {
             if (piece_paused) {
@@ -358,6 +381,7 @@ extension RecordPlayView {
                 disableAutolock()
                 pieceTimer!.startOrRestartPieceTimer()
                 piece_playing = true
+                isRecordingOrPlaying = true     // this is connected to the tab bar, and hides all other tabs
                 playMovement(movement: "One")
             }
         }
@@ -373,6 +397,7 @@ extension RecordPlayView {
             stopAudioMetering()
             if (currentlyPlayingMovement) {
                 audioPlayer!.pause()
+                isRecordingOrPlaying = false     // this is connected to the tab bar, and shows all other tabs
             }
             pieceTimer?.killTimer(saveElapsed: true)
             reenableAutoLockAfterDelay(seconds: 30)
@@ -386,6 +411,7 @@ extension RecordPlayView {
                 audioPlayer!.play()
                 startAudioMetering()
                 disableAutolock()
+                isRecordingOrPlaying = true     // this is connected to the tab bar, and hides all other tabs
             }
             pieceTimer?.startOrRestartPieceTimer()
         }
@@ -399,6 +425,7 @@ extension RecordPlayView {
                 piece_playing = false;
                 stopPlaying()
             }
+            isRecordingOrPlaying = false     // this is connected to the tab bar, and shows all other tabs
             resetPieceToStart()
         }
         
@@ -526,6 +553,7 @@ extension RecordPlayView {
                 currentPlayMovement = 0
             }
             reenableAutoLockAfterDelay(seconds: 30)
+            isRecordingOrPlaying = false    // reenable all tabs
             if (recordingIsComplete) {
             }
         }

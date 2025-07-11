@@ -50,6 +50,14 @@ struct appConstants {
 }
 
 import SwiftUI
+import Combine
+
+class AppViewModel: ObservableObject {
+    @Published var shouldShowAllTabs: Bool = true
+}
+
+
+// MARK: - environment extensions
 
 // Allow immediate playback to be requested by "load performance" function on Libaray tab
 struct playNowKey: EnvironmentKey {
@@ -63,19 +71,20 @@ extension EnvironmentValues {
 }
 
 // Enable programmatic tab switching (so loaded performances can switch to record/play screen for playback)
-struct CurrentTabKey: EnvironmentKey {
+struct currentTabKey: EnvironmentKey {
     static var defaultValue: Binding<ContentView.Tab> = .constant(.recplay)
 }
 extension EnvironmentValues {
     var currentTab: Binding<ContentView.Tab> {
-        get { self[CurrentTabKey.self] }
-        set { self[CurrentTabKey.self] = newValue }
+        get { self[currentTabKey.self] }
+        set { self[currentTabKey.self] = newValue }
     }
 }
 
 
-
 struct ContentView: View {
+    
+    @StateObject private var appViewModel = AppViewModel()
     
     enum Tab {
         case recplay
@@ -86,7 +95,7 @@ struct ContentView: View {
     
     @State private var selectedTab: Tab = .recplay
     @State private var playNowRequested = false
-    @State private var showAllTabs = true
+    @State private var isRecPlay = false
     
     var body: some View {
         TabView (selection: $selectedTab) {
@@ -95,7 +104,8 @@ struct ContentView: View {
                     Label("Record & Play", systemImage: "mic.fill")
                 }
                 .tag(Tab.recplay)
-            if (showAllTabs) {
+                .environmentObject(appViewModel)
+            if (appViewModel.shouldShowAllTabs) {
                 LibraryView()
                     .tabItem {
                         Label("Library", systemImage: "folder.fill")

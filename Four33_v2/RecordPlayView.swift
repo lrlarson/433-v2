@@ -13,7 +13,8 @@ struct RecordPlayView: View {
     
     @State var viewModel = RPV_ViewModel()      // RecordPlayView-ViewModel
     @Environment(\.playNow) var immediatePlay
-    
+    @EnvironmentObject var appViewModel: AppViewModel
+
     var numCells:Int = 30
     var colors: [Color] = [.red, .yellow, .green]
     let saveRecordingPrompt = "If you would like to save this performance, enter a name for it. .\(appConstants.ONLY_CHANCE_TO_SAVE)"
@@ -59,17 +60,25 @@ struct RecordPlayView: View {
             
             HStack {
                 if (viewModel.piece_recording) {
-                    recordButtonView(name: "Stop", image:"stop_wht-512", action:viewModel.interruptRecording, disabled:viewModel.piece_playing)
+                    recordButtonView(name: "Stop", image:"stop_wht-512",
+                                     action:viewModel.interruptRecording,
+                                     disabled:viewModel.piece_playing)
                 } else {
-                    recordButtonView(name: "Record", image:"record_wht_red-512", action:viewModel.startRecording, disabled:viewModel.piece_playing)
+                    recordButtonView(name: "Record", image:"record_wht_red-512",
+                                     action:viewModel.startRecording,
+                                     disabled:viewModel.piece_playing)
                 }
                 
                 recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback, disabled:false)
                 
                 if (viewModel.piece_playing && !viewModel.piece_paused) {
-                    recordButtonView(name: "Pause", image:"pause_wht-512", action:viewModel.pausePlaying, disabled:viewModel.piece_recording)
+                    recordButtonView(name: "Pause", image:"pause_wht-512",
+                                     action:viewModel.pausePlaying,
+                                     disabled:viewModel.piece_recording)
                 } else {
-                    recordButtonView(name: "Play", image:"play_wht-512", action:viewModel.play, disabled:viewModel.piece_recording || !Files.tempPerformanceExists())
+                    recordButtonView(name: "Play", image:"play_wht-512",
+                                     action:viewModel.play,
+                                     disabled:viewModel.piece_recording || !Files.tempPerformanceExists())
                 }
             }
             
@@ -124,14 +133,10 @@ struct RecordPlayView: View {
             }
         }.onDisappear {
             viewModel.reenableAutoLockAfterDelay(seconds: 30)
-            if (viewModel.audioPlayer != nil && viewModel.audioPlayer!.isPlaying) {
-                viewModel.pausePlaying()
-            }
         }.onAppear {
-            if ((viewModel.audioPlayer != nil && viewModel.audioPlayer!.isPlaying) ||
-                ((viewModel.audioRecorder != nil) && viewModel.audioRecorder!.isRecording)) {
-                viewModel.disableAutolock()
-            }
+            // Setup reactive binding when view appears
+            viewModel.setupTabVisibilityBinding(appViewModel: appViewModel)
+            
             // Clear this performance if it has been deleted in the Library
             if (!Files.performanceExistsSaved(perfName: viewModel.perfName)) {
                 viewModel.deletePerformance()
