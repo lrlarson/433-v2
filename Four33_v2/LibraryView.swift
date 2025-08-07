@@ -11,6 +11,7 @@ import SwiftUI
 struct LibraryView: View {
     @State var viewModel = LV_ViewModel()     // LibraryView-ViewModel
     @State private var itemsToDelete: IndexSet?
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         

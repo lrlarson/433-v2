@@ -16,6 +16,7 @@ struct LocationData: Codable {
 
 struct LibraryMapView: View {
     @State var viewModel: LV_ViewModel
+    @EnvironmentObject var appState: AppState
     let parentFolderURL: URL
     let performanceURL: URL
     
@@ -58,6 +59,7 @@ struct LibraryMapView: View {
                         Button(action: {
                             Task {
                                 await viewModel.renamePerformance(oldName: oldName, newName: viewModel.perfTitle)
+                                appState.performanceName = viewModel.perfTitle
                             }
                         }, label: {Text("OK")})
                         Button("Cancel", role: .cancel) { }
@@ -82,15 +84,10 @@ struct LibraryMapView: View {
                     HStack {
                         Button(action: {
                             Task {
-                                do {
-                                    try
-                                    viewModel.loadPerformance(name: viewModel.perfTitle)
-                                    // programatically switch to Record/Play tab and start playback
-                                    immediatePlay.wrappedValue = true
-                                    tab.wrappedValue = .recplay
-                                } catch {
-                                    print ("Error loading performance: \(error.localizedDescription)")
-                                }
+                                appState.performanceName = viewModel.perfTitle
+                                // programatically switch to Record/Play tab and start playback
+                                immediatePlay.wrappedValue = true
+                                tab.wrappedValue = .recplay
                             }
                         }) {
                             Image("play_wht-512")
@@ -123,6 +120,9 @@ struct LibraryMapView: View {
             .navigationTitle(viewModel.perfTitle)
             .navigationBarTitleDisplayMode(.inline)
             .opacity(isHidden ? 0 : 1)
+        }
+        .onAppear {
+            viewModel.updatePerfName(newName: viewModel.perfTitle)
         }
         .task {
             await loadLocationData()

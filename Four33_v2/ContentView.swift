@@ -52,8 +52,9 @@ struct appConstants {
 import SwiftUI
 import Combine
 
-class AppViewModel: ObservableObject {
+class AppState: ObservableObject {
     @Published var shouldShowAllTabs: Bool = true
+    @Published var performanceName: String = ""
 }
 
 
@@ -84,7 +85,7 @@ extension EnvironmentValues {
 
 struct ContentView: View {
     
-    @StateObject private var appViewModel = AppViewModel()
+    @StateObject private var appState = AppState()
     
     enum Tab {
         case recplay
@@ -95,6 +96,7 @@ struct ContentView: View {
     
     @State private var selectedTab: Tab = .recplay
     @State private var playNowRequested = false
+    @State private var perfName: String = ""
     @State private var isRecPlay = false
     
     var body: some View {
@@ -104,15 +106,16 @@ struct ContentView: View {
                     Label("Record & Play", systemImage: "mic.fill")
                 }
                 .tag(Tab.recplay)
-                .environmentObject(appViewModel)
-            if (appViewModel.shouldShowAllTabs) {
+                .environmentObject(appState)
+            if (appState.shouldShowAllTabs) {
                 LibraryView()
                     .tabItem {
                         Label("Library", systemImage: "folder.fill")
                     }
                     .tag(Tab.library)
                     .environment(\.currentTab, $selectedTab)
-                WorldView()
+                    .environmentObject(appState)
+               WorldView()
                     .tabItem {
                         Label("World of 4'33", systemImage: "globe")
                     }
@@ -125,5 +128,6 @@ struct ContentView: View {
             }
         }
         .environment(\.playNow, $playNowRequested)
+        //.environment(\.perfName, $perfName)
     }
 }

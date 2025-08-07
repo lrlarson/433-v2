@@ -17,9 +17,9 @@ extension RecordPlayView {
         
         var isRecordingOrPlaying = false {
             didSet {
-                if let appViewModel = self.appViewModel {
+                if let appState = self.appState {
                     let shouldShowTabs = !isRecordingOrPlaying
-                    appViewModel.shouldShowAllTabs = shouldShowTabs
+                    appState.shouldShowAllTabs = shouldShowTabs
                 }
             }
         }
@@ -53,9 +53,7 @@ extension RecordPlayView {
         var recordingDone = false
         var recordingNeedsSaving = false
         var currentPlayMovement:Int = 0
-        
-        var perfName = ""
-        
+                
         var displayMicPermissionAlert = false
         var displayLocationPermissionAlert = false
         var displayPartialRecordingAlert = false
@@ -89,13 +87,12 @@ extension RecordPlayView {
         }
         
         
-        // MARK: - Set up tab visisbility binding
-        private weak var appViewModel: AppViewModel?
-        func setupTabVisibilityBinding(appViewModel: AppViewModel) {
-            self.appViewModel = appViewModel
+        // MARK: - Set up appState
+        private weak var appState: AppState?
+        func setUpAppState(passedAppState: AppState) {
+            self.appState = passedAppState
             // Initial setup
-            let shouldShowTabs = !isRecordingOrPlaying
-            appViewModel.shouldShowAllTabs = shouldShowTabs
+            appState?.shouldShowAllTabs = !isRecordingOrPlaying
         }
         
 
@@ -148,6 +145,11 @@ extension RecordPlayView {
 
         // MARK: -
         
+        /*
+        func updatePerfName(newName: String) {
+            perfTitle = newName
+        }
+        */
         
         func pieceTimerUpdate(eventType: timerEvent, newVal: Double) {
             switch eventType {
@@ -227,7 +229,7 @@ extension RecordPlayView {
             let metadataURL = Files.getTmpDirURL().appending(path: Files.currentRecordingDirectory).appending(path:Files.metadataFilename)
             let metadata = Files.readMetaDataFromURL(url: metadataURL)
             if (metadata != nil) {
-                perfName = metadata!.title
+                appState?.performanceName = metadata!.title
             }
         }
         
@@ -303,7 +305,7 @@ extension RecordPlayView {
                 
                 pieceTimer?.startOrRestartPieceTimer()
                 
-                perfName = ""
+                appState?.performanceName = ""
                 recordMovement(movement: "One")
                 Files.deleteMovement(movement: "Two")
                 Files.deleteMovement(movement: "Three")
@@ -311,17 +313,20 @@ extension RecordPlayView {
         }
         
         func finishSave() {
-            if (perfName.isEmpty) {
+            if (appState == nil) {return}
+            if (appState!.performanceName == "") {
                 displayValidNameAlert = true
                 return
             }
-            if Files.isSeedRecording(name: perfName) {
+            if Files.isSeedRecording(name: appState!.performanceName) {
                 displayDuplicateNameAlert = true
                 return
             }
             do {
-                try Files.saveRecording(name: perfName, metadata: metadata)
-                recordingNeedsSaving = false
+                if appState!.performanceName != "" {
+                    try Files.saveRecording(name: appState!.performanceName, metadata: metadata)
+                    recordingNeedsSaving = false
+                }
             } catch {
                 switch error {
                 case .duplicateName:
@@ -456,10 +461,14 @@ extension RecordPlayView {
                 resetRecordPlayback()
             }
             resetPieceToStart()
-            Files.deleteMovement(movement: "One")
-            Files.deleteMovement(movement: "Two")
-            Files.deleteMovement(movement: "Three")
-            perfName = ""
+            do {
+                try Files.clearTempDirectory()
+            } catch {
+                print("Error trying to clear temp directory: \(error)")
+            }
+            if (appState != nil) {
+                appState!.performanceName = ""
+            }
         }
 
 
@@ -481,21 +490,14 @@ extension RecordPlayView {
             } catch {
                 print("Error creating audio Recorder. \(error)")
             }
-            
-            //[self setFileDescriptionForFormat:recorder->DataFormat() withName:path];
-            
-        // USED TO THINK THIS WAS NECESSARY, BUT IT'S NOT:
-        //    // Wait a half second, then start the timer with accurate queue time
-        //    [self performSelector:@selector(startRecordTimer) withObject:nil afterDelay:0.001];
-            //[self startRecordTimer];
         }
         
         
         func playMovement(movement:String)
         {
-            // create a new queue for the given movement
-            let url = Files.currentRecordingMovementURL(movement:movement)
-
+            if (appState == nil) { return }
+            let url = Files.storedPerformanceMovementURL(name: appState!.performanceName, movement: movement)
+            //print("Playing file \(url)")
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
                 audioPlayer?.delegate = self
@@ -557,37 +559,5 @@ extension RecordPlayView {
             if (recordingIsComplete) {
             }
         }
-        
-        /*  TODO: this needs to be ported to Swift once loading of recordings is implemented
-        // A recording is about to load: kill all recording or playback
-        - (void)willLoadRecording:(NSNotification *)note
-        {
-            if (piece_recording) {
-                if (recorder->IsRunning()) {
-                    [self endPerformance:NO];
-                    recordingDone = YES;
-                } else {
-                    // we're in the "intermission"
-                    [pieceTimer killTimer];
-                    piece_recording = NO;
-                    
-                    [self setRecordButtonStateToRecord];
-                    [self enablePlayButton];
-                }
-            }
-            if (piece_paused) {
-                piece_paused = NO;
-                [pieceTimer startTimerWithQueueTime: -1];
-            }
-            if (piece_playing) {
-                [self endPerformance:NO];
-                // Only stop play queue if we're not in a break:
-                if (player->IsRunning() && !piece_paused) {
-                    [self stopPlayQueue];
-                }
-                [self resetPieceToStart];
-            }
-        }
-        */
     }
 }

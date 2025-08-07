@@ -32,6 +32,7 @@ struct PFileItem: Identifiable, Hashable {
 
 // MARK: - LibraryView View Model (also passed to LibraryMapView)
 @Observable @MainActor class LV_ViewModel {
+
     let parentFolderURL: URL = Files.getDocumentsDirURL()
     
     var fileItems: [PFileItem] = []
@@ -133,8 +134,14 @@ struct PFileItem: Identifiable, Hashable {
         }
     }
     
+    func updatePerfName(newName: String) {
+        perfTitle = newName
+    }
     
+    //TODO: change this to merely send the new performance name to Record&Play viewmodel.
     func loadPerformance(name: String) throws {
+        perfTitle = name
+        /*
         do {
             // Load a performance atomically
             try Files.loadRecording(name: name)
@@ -143,6 +150,7 @@ struct PFileItem: Identifiable, Hashable {
             default: print ("Load recording error: ", error)
             }
         }
+        */
     }
              
     func renamePerformance(oldName: String, newName: String) async {
@@ -171,6 +179,7 @@ struct PFileItem: Identifiable, Hashable {
         }
         
         //  Update the performance name in the metadata
+        perfTitle = newName
         let metadataURL = parentFolderURL.appending(path:newName, directoryHint: .isDirectory)
                                          .appending(path:Files.metadataFilename, directoryHint: .notDirectory)
         var metadata = Files.readMetaDataFromURL(url: metadataURL)

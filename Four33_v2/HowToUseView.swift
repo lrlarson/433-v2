@@ -62,7 +62,7 @@ struct HowToUseView: View {
                             VStack(alignment: .leading, spacing: 16) {
                                 Text("Playing").font(.title)
                                 Text("On the **Record & Play** screen, press the **Play** button. Playback may be paused at any time by pressing **Pause**, and resumed by hitting **Play** again. You may rewind the recording to the beginning by pressing the **Reset** button.")
-                                Text("During both recording and playback, progress through the three movements is indicated by the three bars near the bottom of the screen; also, the tab bar will only show **Record & Play** as access to the rest of the app is disabled until recording or playback is stopped.")
+                                Text("During both recording and playback, progress through the three movements is indicated by the three bars near the bottom of the screen. Also, the tab bar will only show **Record & Play** as access to the rest of the app is disabled until recording or playback is stopped.")
                                 Spacer().frame(height: 20)
                             }.id("playing")
                             VStack(alignment: .leading, spacing: 16) {

@@ -67,9 +67,6 @@ enum Files {
     static func getCurrentRecordingURL() -> URL {
         // Do recording and playback in temp directory
         return getTmpDirURL().appending(path: currentRecordingDirectory)
-        
-        // During development, do temp work in user folder so it can be seen
-        //return getDocumentsDirURL().appending(path: currentRecordingDirectory)
     }
     
     static func createRecordingDir(pieceName:String) throws (FilesError)
@@ -85,7 +82,7 @@ enum Files {
     }
     
     // useful for diagnostics
-    fileprivate static func listTmpDir() {
+    static func listTmpDir() {
         // list tmp dir contents
         var files = [URL]()
         if let enumerator = FileManager.default.enumerator(at: getTmpDirURL(), includingPropertiesForKeys: [.isRegularFileKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
@@ -113,15 +110,10 @@ enum Files {
         //listTmpDir()
     }
 
-    // Save the current recording atomically (as possible)*:
+    // Save the current recording atomically
     //  First, copy the current recording & metadata to the temp directory;
     //   then, edit the (temp) metadata to reflect the new recording name;
     //   finally, move the (temp) recording to the Docs directory.
-    //
-    //   * Even more finally (this is the part that is not completely atomic), notify the
-    //   RecordPlayController to update the current recording's name. In the worst case,
-    //   a save interrupted just at this point might mean the displayed recording name
-    //   is not updated properly.
     static func saveRecording(name:String, metadata:RecordingMetaData) throws (FilesError)
     {
         // Check if a recording of this name already exists
@@ -164,12 +156,12 @@ enum Files {
             throw .metaDataSaveFailed
         }
         
-        // Finally, move temp recording directory into documents
+        // Finally, copy temp recording directory into documents
         // (Any interruption up to this point will leave the recording intact but unsaved)
         do {
-            try fileManager.moveItem(at: getTmpDirURL().appending(path: name), to: newRecordingURL)
+            try fileManager.copyItem(at: getTmpDirURL().appending(path: name), to: newRecordingURL)
         } catch {
-            print ("Error moving recording to documents. ", error)
+            print ("Error copying recording to documents. ", error)
             throw .fileSaveError
         }
         
@@ -224,9 +216,16 @@ enum Files {
         }
     }
     
-    static func tempPerformanceExists() -> Bool {
-        let url = currentRecordingMovementURL(movement:"One")
-        return fileManager.fileExists(atPath: url.path)
+    static func deleteMetadata() {
+        let url = getCurrentRecordingURL()
+            .appending(path: "metadata")
+        if (fileManager.fileExists(atPath: url.path)) {
+            do {
+                try fileManager.removeItem(at: url)
+            } catch {
+                print("Error deleting metadata.")
+            }
+        }
     }
     
     static func performanceExistsSaved(perfName:String) -> Bool {
@@ -239,7 +238,13 @@ enum Files {
             .appending(path: getMovementFileName(movement: movement))
     }
     
+    static func storedPerformanceMovementURL(name:String, movement:String) -> URL {
+        return getDocumentsDirURL()
+            .appending(path: name, directoryHint: .isDirectory)
+            .appending(path: getMovementFileName(movement: movement))
+    }
     
+
     static func buildFullDocsURL(recordingName:String, movement:String) -> URL {
         return getDocumentsDirURL()
             .appending(path: recordingName, directoryHint: .isDirectory)
@@ -266,7 +271,6 @@ enum Files {
             let mdata = try PropertyListDecoder().decode(RecordingMetaData.self, from: data)
             return mdata
         } catch {
-            print("Error attempting to read recording metadata.")
             return nil
         }
     }
@@ -318,46 +322,3 @@ enum Files {
     }
     
 }
-
-    
-        /*
-        DateFormatter *dateFormatNoMsecs = [[NSDateFormatter alloc] init];
-        [dateFormatNoMsecs setDateFormat:DATE_FORMAT_NO_MILLISECONDS];
-        
-        // Get millisecond accuracy into our time stamp
-        NSDate *now = [NSDate date];
-        double secondsSinceEpoch = [now timeIntervalSince1970];
-        double integralSeconds; //ignored
-        double fractionalSeconds = modf(secondsSinceEpoch, &integralSeconds);
-        NSString *dateWithoutMsecs = [dateFormatNoMsecs stringFromDate:now];
-        NSString *fracSecsOnly = [[NSString stringWithFormat:@"%.6f", fractionalSeconds] substringFromIndex:2];
-        NSString *metadataDateTime = [NSString stringWithFormat:@"%@%@", dateWithoutMsecs, fracSecsOnly];
-        [self updateMetadataWithDateTime:metadataDateTime];
-        //NSLog (@"metadata datetime: %@", metadataDateTime );
-        */
-
-
-
-
-
-
-/*
- // Used to copy the 'seed recording' from the app bundle to the documents directory
- //  WAIT: shouldn't we be copying it to the temp directory in preparation for playing it?
- static func copyFilesFromBundleToDocumentsFolderWith(fileExtension: String) {
- if let resPath = Bundle.main.resourcePath {
- do {
- let dirContents = try FileManager.default.contentsOfDirectory(atPath: resPath)
- let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
- let filteredFiles = dirContents.filter{ $0.contains(fileExtension)}
- for fileName in filteredFiles {
- if let documentsURL = documentsURL {
- let sourceURL = Bundle.main.bundleURL.appendingPathComponent(fileName)
- let destURL = documentsURL.appendingPathComponent(fileName)
- do { try FileManager.default.copyItem(at: sourceURL, to: destURL) } catch { }
- }
- }
- } catch { }
- }
- }
- */
