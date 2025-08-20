@@ -145,12 +145,6 @@ extension RecordPlayView {
 
         // MARK: -
         
-        /*
-        func updatePerfName(newName: String) {
-            perfTitle = newName
-        }
-        */
-        
         func pieceTimerUpdate(eventType: timerEvent, newVal: Double) {
             switch eventType {
             case .pieceElapsedTime:
@@ -312,19 +306,19 @@ extension RecordPlayView {
             }
         }
         
-        func finishSave() {
+        func finishSave(newPerfName: String) {
             if (appState == nil) {return}
-            if (appState!.performanceName == "") {
+            if (newPerfName == "") {
                 displayValidNameAlert = true
                 return
             }
-            if Files.isSeedRecording(name: appState!.performanceName) {
+            if Files.isSeedRecording(name: newPerfName) {
                 displayDuplicateNameAlert = true
                 return
             }
             do {
-                if appState!.performanceName != "" {
-                    try Files.saveRecording(name: appState!.performanceName, metadata: metadata)
+                if newPerfName != "" {
+                    try Files.saveRecording(name: newPerfName, metadata: metadata)
                     recordingNeedsSaving = false
                 }
             } catch {
@@ -335,6 +329,7 @@ extension RecordPlayView {
                 default: print ("Save recording error: ", error)
                 }
             }
+            appState?.performanceName = newPerfName
         }
         
         // Return a twenty-digit timestamp of the form yyyyMMddHHmmssSSSSSS

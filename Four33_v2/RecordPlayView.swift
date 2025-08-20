@@ -22,7 +22,7 @@ struct RecordPlayView: View {
     let saveRecordingPrompt = "If you would like to save this performance, enter a name for it. .\(appConstants.ONLY_CHANCE_TO_SAVE)"
     let recInterruptedNamePrompt = "Performance was interrupted. If you would like to save the partial performance, enter a name for it (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'.\(appConstants.ONLY_CHANCE_TO_SAVE)"
     let invalidNamePrompt = "Please enter a valid name for the performance (max. \(appConstants.MAX_RECORDNAME_LENGTH) characters) and hit 'OK'.\(appConstants.ONLY_CHANCE_TO_SAVE)"
-    let duplicateNamePrompt = "A performance by that name already exists. Please try another..\(appConstants.ONLY_CHANCE_TO_SAVE)"
+    let duplicateNamePrompt = "A performance by that name already exists. Please try another.\(appConstants.ONLY_CHANCE_TO_SAVE)"
     
     var body: some View {
         VStack {
@@ -98,41 +98,40 @@ struct RecordPlayView: View {
                 TextField("Recording Name", text: $perfName)
                     .disableAutocorrection(true)
                     .onChange(of: perfName) { perfName = Files.trimPerfName(name: perfName) }
-                Button("Save", action: viewModel.finishSave)
+                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
                 Button("Delete performance", action: {viewModel.deletePerformance()})
             } message: {
                 Text(recInterruptedNamePrompt)
             }
-            
             .alert("Please enter a valid name", isPresented: $viewModel.displayValidNameAlert) {
                 TextField("Performance Name", text: self.$perfName)
                     .disableAutocorrection(true)
                     .onChange(of: perfName) { perfName = Files.trimPerfName(name: perfName) }
-                Button("Save", action: viewModel.finishSave)
+                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
                 Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(invalidNamePrompt)
             }
-            
             .alert("Duplicate name", isPresented: $viewModel.displayDuplicateNameAlert) {
                 TextField("Performance Name", text: self.$perfName)
                     .disableAutocorrection(true)
                     .onChange(of: self.perfName) { perfName = Files.trimPerfName(name: perfName)  }
-                Button("Save", action: viewModel.finishSave)
+                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
                 Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(duplicateNamePrompt)
             }
-            
+
             .alert("Save recording", isPresented: $viewModel.displaySaveRecordingAlert) {
                 TextField("Performance Name", text: self.$perfName)
                     .disableAutocorrection(true)
                     .onChange(of: self.perfName) { self.perfName = Files.trimPerfName(name: self.perfName) }
-                Button("Save", action: viewModel.finishSave)
+                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
                 Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(saveRecordingPrompt)
             }
+
        }.onDisappear {
            viewModel.reenableAutoLockAfterDelay(seconds: 30)
            appState.performanceName = perfName
