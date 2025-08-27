@@ -13,7 +13,6 @@ import Combine
 struct RecordPlayView: View {
     
     @State var viewModel = RPV_ViewModel()      // RecordPlayView-ViewModel
-    @State var perfName:String = ""
     @Environment(\.playNow) var immediatePlay
     @EnvironmentObject private var appState: AppState
 
@@ -26,7 +25,7 @@ struct RecordPlayView: View {
     
     var body: some View {
         VStack {
-            Text("\(perfName)")
+            Text("\(viewModel.perfName)")
                 .padding(.bottom, 20.0)
                 .font(.system(size: 20))
             HStack() {
@@ -80,7 +79,7 @@ struct RecordPlayView: View {
                 } else {
                     recordButtonView(name: "Play", image:"play_wht-512",
                                      action:viewModel.play,
-                                     disabled:viewModel.piece_recording || perfName == "")
+                                     disabled:viewModel.piece_recording || viewModel.perfName == "")
                 }
             }
 
@@ -95,58 +94,60 @@ struct RecordPlayView: View {
             }
             
             .alert("Save partial performance?", isPresented: $viewModel.displayPartialRecordingAlert) {
-                TextField("Recording Name", text: $perfName)
+                TextField("Recording Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: perfName) { perfName = Files.trimPerfName(name: perfName) }
-                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
+                    .onChange(of: viewModel.perfName) { oldValue, newValue in
+                        viewModel.perfName = Files.trimPerfName(name: oldValue) }
+                 Button("Save") {viewModel.finishSave()}
                 Button("Delete performance", action: {viewModel.deletePerformance()})
             } message: {
                 Text(recInterruptedNamePrompt)
             }
             .alert("Please enter a valid name", isPresented: $viewModel.displayValidNameAlert) {
-                TextField("Performance Name", text: self.$perfName)
+                TextField("Performance Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: perfName) { perfName = Files.trimPerfName(name: perfName) }
-                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
+                    .onChange(of: viewModel.perfName) { oldValue, newValue in
+                        viewModel.perfName = Files.trimPerfName(name: oldValue) }
+                 Button("Save") {viewModel.finishSave()}
                 Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(invalidNamePrompt)
             }
             .alert("Duplicate name", isPresented: $viewModel.displayDuplicateNameAlert) {
-                TextField("Performance Name", text: self.$perfName)
+                TextField("Performance Name", text: $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: self.perfName) { perfName = Files.trimPerfName(name: perfName)  }
-                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
+                    .onChange(of: viewModel.perfName) { oldValue, newValue in
+                        viewModel.perfName = Files.trimPerfName(name: oldValue) }
+                 Button("Save") {viewModel.finishSave()}
                 Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(duplicateNamePrompt)
             }
-
             .alert("Save recording", isPresented: $viewModel.displaySaveRecordingAlert) {
-                TextField("Performance Name", text: self.$perfName)
+                TextField("Performance Name", text:  $viewModel.perfName)
                     .disableAutocorrection(true)
-                    .onChange(of: self.perfName) { self.perfName = Files.trimPerfName(name: self.perfName) }
-                Button("Save") {viewModel.finishSave(newPerfName: perfName)}
+                    .onChange(of: viewModel.perfName) { oldValue, newValue in
+                        viewModel.perfName = Files.trimPerfName(name: oldValue) }
+                Button("Save") {viewModel.finishSave()}
                 Button("Delete performance") {viewModel.deletePerformance()}
             } message: {
                 Text(saveRecordingPrompt)
             }
-
+            
        }.onDisappear {
            viewModel.reenableAutoLockAfterDelay(seconds: 30)
-           appState.performanceName = perfName
+           appState.performanceName = viewModel.perfName
         }.onAppear {
             // Setup reactive binding (allows tab bar to respond to play/record status)
             viewModel.setUpAppState(passedAppState: appState)
-            perfName = appState.performanceName
+            viewModel.perfName = appState.performanceName
             
             // Clear this performance if it has been deleted in the Library
-            if (!Files.performanceExistsSaved(perfName: perfName)) {
+            if (!Files.performanceExistsSaved(perfName: viewModel.perfName)) {
                 viewModel.deletePerformance()
-                perfName = ""
+                viewModel.perfName = ""
             }
             
-            viewModel.updateMetadata()
             if (immediatePlay.wrappedValue) {
                 immediatePlay.wrappedValue = false
                 viewModel.play()

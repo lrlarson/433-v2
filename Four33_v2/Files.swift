@@ -71,10 +71,10 @@ enum Files {
     
     static func createRecordingDir(pieceName:String) throws (FilesError)
     {
-        let piece_dir = getTmpDirURL().appending(path: pieceName)
-        if (!fileManager.fileExists(atPath: piece_dir.path())) {
+        let perf_dir = getTmpDirURL().appending(path: pieceName)
+        if (!fileManager.fileExists(atPath: perf_dir.path())) {
             do {
-                try fileManager.createDirectory(at: piece_dir, withIntermediateDirectories: true)
+                try fileManager.createDirectory(at: perf_dir, withIntermediateDirectories: true)
             } catch {
                 throw .createDirectoryFailed
             }
@@ -95,25 +95,9 @@ enum Files {
         }
     }
     
-    static func loadRecording(name:String) throws (any Error)
-    {
-        try clearTempDirectory()
-        var fromURL: URL!
-        if (isSeedRecording(name: name)) {
-            fromURL = seedRecordingURL()
-        } else {
-            fromURL = getDocumentsDirURL().appending(path: name, directoryHint: .isDirectory)
-        }
-        let toURL = getTmpDirURL().appending(path: name, directoryHint: .isDirectory)
-        try fileManager.copyItem(at: fromURL, to: toURL)
-        try fileManager.moveItem(at: toURL, to: getTmpDirURL().appending(path: currentRecordingDirectory))
-        //listTmpDir()
-    }
-
     // Save the current recording atomically
-    //  First, copy the current recording & metadata to the temp directory;
-    //   then, edit the (temp) metadata to reflect the new recording name;
-    //   finally, move the (temp) recording to the Docs directory.
+    //  First, copy the (title updated) metadata to the temp directory;
+    //  finally, move the (temp) recording to the Docs directory.
     static func saveRecording(name:String, metadata:RecordingMetaData) throws (FilesError)
     {
         // Check if a recording of this name already exists
@@ -124,79 +108,31 @@ enum Files {
         }
         
         // We have a valid recording name:
-        // Copy current recording to new folder of that name inside temp directory
-        do {
-            try createRecordingDir(pieceName: name)
-        } catch .createDirectoryFailed {
-            throw .createDirectoryFailed
-        }
-        
-        // Copy all three movements
-        for mname in movementNames {
-            let tmp_url = getTmpDirURL().appending(path: name).appending(path: getMovementFileName(movement: mname))
-            let from_url = currentRecordingMovementURL(movement: mname)
-            if fileManager.fileExists(atPath: from_url.path()) {
-                do {
-                    try fileManager.copyItem(at: from_url, to: tmp_url)
-                } catch {
-                    print (error)
-                    throw .fileCopyFailed
-                }
-            }
-        }
-        
-        // edit metadata to update recording title, then save it to temp recording directory
+        // copy metadata for the recording, add the new given title name,
+        // then save it to the temp recording directory
         var newmeta = RecordingMetaData()
         newmeta.created = metadata.created
         newmeta.geohash = metadata.geohash
         newmeta.title = name
         do {
-            try writeMetadataToURL(url: getTmpDirURL().appending(path: name).appending(path:Files.metadataFilename), metadata: newmeta)
+            try writeMetadataToURL(url: getTmpDirURL()
+                .appending(path: currentRecordingDirectory)
+                .appending(path:Files.metadataFilename), metadata: newmeta)
         } catch {
             throw .metaDataSaveFailed
         }
         
-        // Finally, copy temp recording directory into documents
-        // (Any interruption up to this point will leave the recording intact but unsaved)
+        // Move the recording folder from [tmpdir]/__current__/ to [docsdir]/[recording_name/]
+        let from_url = getTmpDirURL().appending(path: currentRecordingDirectory)
+        let to_url = getDocumentsDirURL().appending(path: name)
         do {
-            try fileManager.copyItem(at: getTmpDirURL().appending(path: name), to: newRecordingURL)
+            try fileManager.moveItem(at: from_url, to: to_url)
         } catch {
-            print ("Error copying recording to documents. ", error)
+            print (error)
             throw .fileSaveError
         }
-        
-         func cleanOutRecording()
-         {
-             do {
-                 try fileManager.removeItem(at: getTmpDirURL().appending(path: name))
-             } catch {
-                 print ("Error during temp. directory cleanup: \(error)")
-             }
-
-             /*
-             [self resetMetadataTitle];
-             [self enablePlayButton];       // Actually disables play button because no files exist
-             */
-             // TODO: Fix this
-             //resetPieceToStart()
-             //recordingNeedsSaving = NO;
-         }
-
-        /*
-         // Send "saveSucceeded" event, including saved title
-        NSMutableDictionary *extraInfo = [[NSMutableDictionary alloc] init];
-        NSString *recordingTitle = name;
-        [extraInfo setObject:recordingTitle forKey:@"recordingTitle"];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"saveSucceeded"
-                                                                object:self
-                                                              userInfo:extraInfo];
-        });
-        //[self refreshSavedRecordingsArray];
-        */
     }
-    
-    
+
     static func getMovementFileName(movement:String) -> String {
         return String(format:"%@%@%@", "Movement", movement, appConstants.WAV_FORMAT_EXTENSION)
     }
@@ -264,7 +200,6 @@ enum Files {
         }
     }
     
-    
     static func readMetaDataFromURL(url:URL) -> RecordingMetaData? {
         do {
             let data = try Data(contentsOf: url)
@@ -306,7 +241,6 @@ enum Files {
             return nil
         }
     }
-    
     
     static func strToDate(dateStr: String) -> Date? {
         let calendar = Calendar.current

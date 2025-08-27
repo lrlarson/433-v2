@@ -41,6 +41,8 @@ extension RecordPlayView {
         var elapsedTime = ""
         var intermissionTime = ""
         
+        var perfName:String = ""
+        
         var audioSessionDenied = false
         var playbackWasInterrupted = false
         var recordingWasInterrupted = false
@@ -64,6 +66,7 @@ extension RecordPlayView {
         
         override init() {
             super.init()
+            
             pieceTimer = PieceTimer(timerGr: appConstants.TIMER_GRAIN,
                                     mv1dur: appConstants.MVI_DURATION,
                                     mv2dur: appConstants.MVII_DURATION,
@@ -218,15 +221,6 @@ extension RecordPlayView {
             return true
         }
         
-        func updateMetadata() {
-            resetPieceToStart()
-            let metadataURL = Files.getTmpDirURL().appending(path: Files.currentRecordingDirectory).appending(path:Files.metadataFilename)
-            let metadata = Files.readMetaDataFromURL(url: metadataURL)
-            if (metadata != nil) {
-                appState?.performanceName = metadata!.title
-            }
-        }
-        
         // Turn off idle timer (auto lock) (for use while recording)
         func disableAutolock() {
             // Kill any leftover reenable timer events
@@ -300,27 +294,26 @@ extension RecordPlayView {
                 pieceTimer?.startOrRestartPieceTimer()
                 
                 appState?.performanceName = ""
+                perfName = ""
                 recordMovement(movement: "One")
                 Files.deleteMovement(movement: "Two")
                 Files.deleteMovement(movement: "Three")
             }
         }
         
-        func finishSave(newPerfName: String) {
+        func finishSave() {
             if (appState == nil) {return}
-            if (newPerfName == "") {
+            if (perfName == "") {
                 displayValidNameAlert = true
                 return
             }
-            if Files.isSeedRecording(name: newPerfName) {
+            if Files.isSeedRecording(name: perfName) {
                 displayDuplicateNameAlert = true
                 return
             }
             do {
-                if newPerfName != "" {
-                    try Files.saveRecording(name: newPerfName, metadata: metadata)
+                try Files.saveRecording(name: perfName, metadata: metadata)
                     recordingNeedsSaving = false
-                }
             } catch {
                 switch error {
                 case .duplicateName:
@@ -329,7 +322,7 @@ extension RecordPlayView {
                 default: print ("Save recording error: ", error)
                 }
             }
-            appState?.performanceName = newPerfName
+            appState?.performanceName = perfName
         }
         
         // Return a twenty-digit timestamp of the form yyyyMMddHHmmssSSSSSS
