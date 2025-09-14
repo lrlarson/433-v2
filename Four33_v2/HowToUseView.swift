@@ -71,7 +71,7 @@ struct HowToUseView: View {
                                  Text("Tapping on a performance title displays a window showing where (assuming Location Services are enabled) and when the recording was made. Also on this screen are three buttons:")
                                  VStack(spacing: 16) {
                                     Text("Play").font(.title3)
-                                    Text("Press this, and after a brief pause while the selected performance loads, the display will switch to the **Record & Play** screen and begin playback")
+                                    Text("Loads the selected performance; the display will switch to the **Record & Play** screen and begin playback.")
                                     Text("Rename").font(.title3)
                                     Text("If you wish to change the name of the currently-selected performance, tap the **Rename** button. You will be prompted for a new name for the performance.")
                                     Text("Upload").font(.title3)

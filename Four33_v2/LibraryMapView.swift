@@ -86,7 +86,7 @@ struct LibraryMapView: View {
                                 appState.performanceName = viewModel.perfTitle
                                 // programatically switch to Record/Play tab and start playback
                                 immediatePlay.wrappedValue = true
-                                tab.wrappedValue = .recplay
+                                tab.wrappedValue = .recplay     // Switch to record/play tab
                             }
                         }) {
                             Image("play_wht-512")

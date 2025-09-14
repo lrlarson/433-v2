@@ -70,7 +70,7 @@ struct RecordPlayView: View {
                                      disabled:viewModel.piece_playing)
                 }
                 
-                recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback, disabled:false)
+                recordButtonView(name: "Reset", image:"skip_to_start_wht-512", action:viewModel.resetRecordPlayback, disabled: viewModel.perfName == "")
                 
                 if (viewModel.piece_playing && !viewModel.piece_paused) {
                     recordButtonView(name: "Pause", image:"pause_wht-512",
@@ -148,7 +148,7 @@ struct RecordPlayView: View {
             
             if (immediatePlay.wrappedValue) {
                 immediatePlay.wrappedValue = false
-                viewModel.play()
+                viewModel.playFromLib()
             }
             
             // TEST ONLY:

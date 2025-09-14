@@ -104,6 +104,7 @@ extension RecordPlayView {
             if (secondsLeftInMovement > 2) {
                 pieceTimer?.killTimer()
                 piece_playing = false
+                appState?.shouldShowAllTabs = true
             }
         }
 
@@ -361,22 +362,30 @@ extension RecordPlayView {
             stopAudioMetering()
             audioRecorder?.stop()
             audioRecorder = nil
-       }
+        }
+        
+        func playFromLib() {
+            hitIt()
+        }
         
         func play() {
             if (piece_paused) {
                 unPausePlaying()
             } else {
-                if (pieceTimer != nil) {
-                    pieceTimer?.resetPieceInfo()
-                }
-                resetPieceToStart()
-                disableAutolock()
-                pieceTimer!.startOrRestartPieceTimer()
-                piece_playing = true
-                isRecordingOrPlaying = true     // this is connected to the tab bar, and hides all other tabs
-                playMovement(movement: "One")
+                hitIt()
             }
+        }
+        
+        func hitIt() {
+            if (pieceTimer != nil) {
+                pieceTimer?.resetPieceInfo()
+            }
+            resetPieceToStart()
+            disableAutolock()
+            pieceTimer!.startOrRestartPieceTimer()
+            piece_playing = true
+            isRecordingOrPlaying = true     // this is connected to the tab bar, and hides all other tabs
+            playMovement(movement: "One")
         }
         
         func stopPlaying() {
@@ -388,9 +397,9 @@ extension RecordPlayView {
         func pausePlaying() {
             piece_paused = true
             stopAudioMetering()
+            isRecordingOrPlaying = false     // this is connected to the tab bar, and shows all other tabs
             if (currentlyPlayingMovement) {
                 audioPlayer!.pause()
-                isRecordingOrPlaying = false     // this is connected to the tab bar, and shows all other tabs
             }
             pieceTimer?.killTimer(saveElapsed: true)
             reenableAutoLockAfterDelay(seconds: 30)
