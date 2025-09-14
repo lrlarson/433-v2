@@ -121,7 +121,7 @@ struct FileItemRow: View {
                 .frame(minWidth: 100, maxWidth: .infinity, alignment: .trailing)
             let pURL = (Files.isSeedRecording(name: item.name)) ?
             Files.seedRecordingURL() : folderURL.appendingPathComponent(item.name)
-            NavigationLink(destination: LibraryMapView(viewModel: viewModel, parentFolderURL: folderURL, performanceURL: pURL)){}
+            NavigationLink(destination: LibraryMapView(viewModel: viewModel, performanceURL: pURL)){}
             Spacer()
         }
     }

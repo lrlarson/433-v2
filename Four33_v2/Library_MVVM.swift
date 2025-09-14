@@ -134,25 +134,6 @@ struct PFileItem: Identifiable, Hashable {
         }
     }
     
-    func updatePerfName(newName: String) {
-        perfTitle = newName
-    }
-    
-    /*
-    //TODO: change this to merely send the new performance name to Record&Play viewmodel.
-    func loadPerformance(name: String) throws {
-        perfTitle = name
-        do {
-            // Load a performance atomically
-            try Files.loadRecording(name: name)
-        } catch {
-            switch error {
-            default: print ("Load recording error: ", error)
-            }
-        }
-    }
-    */
-             
     func renamePerformance(oldName: String, newName: String) async {
         
         // Can't rename seed recording

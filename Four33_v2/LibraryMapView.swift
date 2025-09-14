@@ -17,7 +17,6 @@ struct LocationData: Codable {
 struct LibraryMapView: View {
     @State var viewModel: LV_ViewModel
     @EnvironmentObject var appState: AppState
-    let parentFolderURL: URL
     let performanceURL: URL
     
     // State properties to store the loaded data
@@ -121,9 +120,6 @@ struct LibraryMapView: View {
             .navigationBarTitleDisplayMode(.inline)
             .opacity(isHidden ? 0 : 1)
         }
-        .onAppear {
-            viewModel.updatePerfName(newName: viewModel.perfTitle)
-        }
         .task {
             await loadLocationData()
         }
@@ -163,7 +159,6 @@ struct LibraryMapView: View {
         }
         isHidden = false;
     }
-    
 }
         
         

@@ -484,10 +484,17 @@ extension RecordPlayView {
         func playMovement(movement:String)
         {
             if (appState == nil) { return }
-            let url = Files.storedPerformanceMovementURL(name: appState!.performanceName, movement: movement)
+            let performanceName = appState!.performanceName
+            var purl:URL? = nil
+            if (Files.isSeedRecording(name: performanceName)) {
+                purl = Files.seedPerformanceMovementURL(movement: movement )
+            }
+            else {
+                purl = Files.storedPerformanceMovementURL(name: performanceName, movement: movement)
+            }
             //print("Playing file \(url)")
             do {
-                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer = try AVAudioPlayer(contentsOf: purl!)
                 audioPlayer?.delegate = self
                 audioPlayer?.isMeteringEnabled = true
                 startAudioMetering()

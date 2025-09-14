@@ -174,6 +174,10 @@ enum Files {
             .appending(path: getMovementFileName(movement: movement))
     }
     
+    static func seedPerformanceMovementURL(movement:String) -> URL {
+        return seedRecordingURL().appending(path: getMovementFileName(movement: movement))
+    }
+    
     static func storedPerformanceMovementURL(name:String, movement:String) -> URL {
         return getDocumentsDirURL()
             .appending(path: name, directoryHint: .isDirectory)

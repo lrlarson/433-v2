@@ -141,9 +141,7 @@ struct RecordPlayView: View {
             // Setup reactive binding (allows tab bar to respond to play/record status)
             viewModel.setUpAppState(passedAppState: appState)
             viewModel.perfName = appState.performanceName
-            
-            // Clear this performance if it has been deleted in the Library
-            if (!Files.performanceExistsSaved(perfName: viewModel.perfName)) {
+            if (!Files.isSeedRecording(name: viewModel.perfName) && !Files.performanceExistsSaved(perfName: viewModel.perfName)) {
                 viewModel.deletePerformance()
                 viewModel.perfName = ""
             }
