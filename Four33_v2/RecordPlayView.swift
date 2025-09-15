@@ -148,6 +148,7 @@ struct RecordPlayView: View {
             if (!Files.isSeedRecording(name: viewModel.perfName) && !Files.performanceExistsSaved(perfName: viewModel.perfName)) {
                 viewModel.deletePerformance()
                 viewModel.perfName = ""
+                viewModel.resetRecordPlayback()
             }
             
             if (immediatePlay.wrappedValue) {
