@@ -62,6 +62,7 @@ extension RecordPlayView {
         var displayValidNameAlert = false
         var displayDuplicateNameAlert = false
         var displaySaveRecordingAlert = false
+        var displayInterruptedAlert = false
 
         
         override init() {
@@ -128,20 +129,26 @@ extension RecordPlayView {
             // Switch over the interruption type.
             switch type {
             case .began:
-                // An interruption began. Update the UI as necessary.
-                print ("Interruption began.")
-                
+                displayInterruptedAlert = true
+                if (piece_playing) {
+                    pausePlaying()
+                }
+                if (piece_recording) {
+                    interruptRecording()
+                }
+            /*
             case .ended:
                 // An interruption ended. Resume playback, if appropriate.
                 guard let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt else { return }
                 let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
                 if options.contains(.shouldResume) {
                     // An interruption ended. Resume playback.
-                    print ("Interruption ended. Resuming playback.")
+                    //print ("Interruption ended. Resuming playback.")
                 } else {
                     // An interruption ended. Don't resume playback.
-                    print ("Interruption ended. Not resuming playback.")
+                    //print ("Interruption ended. Not resuming playback.")
                 }
+             */
                 
             default: ()
             }

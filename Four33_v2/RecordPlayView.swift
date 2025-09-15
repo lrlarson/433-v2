@@ -133,7 +133,11 @@ struct RecordPlayView: View {
             } message: {
                 Text(saveRecordingPrompt)
             }
-            
+            .alert("Performance interrupted!", isPresented: $viewModel.displayInterruptedAlert) {
+            } message: {
+                Text("An external event interrupted the performance.")
+            }
+
        }.onDisappear {
            viewModel.reenableAutoLockAfterDelay(seconds: 30)
            appState.performanceName = viewModel.perfName
