@@ -30,7 +30,7 @@ extension RecordPlayView {
         private var locationManager = LocationManager()
         private var pieceTimer:PieceTimer?
         private var meterTimer:Timer? = nil
-        private var secondsLeftInMovement = 0
+        private var secondsLeftInMovement = 0.0
         var audioPlayer:AVAudioPlayer?
         var audioRecorder:AVAudioRecorder?
         
@@ -102,7 +102,10 @@ extension RecordPlayView {
 
         // MARK: - AVAudioPlayerDelegate
         func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-            if (secondsLeftInMovement > 2) {
+            //print("audioPlayerDidFinishPlaying. secondsLeftInMovement: \(secondsLeftInMovement)")
+            // Filter out spurious events from playback that ends just before timer runs out.
+            // In other words, only kill playback if a movement ends prematurely:
+            if (secondsLeftInMovement > 0.3) {
                 pieceTimer?.killTimer()
                 piece_playing = false
                 appState?.shouldShowAllTabs = true
@@ -157,19 +160,20 @@ extension RecordPlayView {
         // MARK: -
         
         func pieceTimerUpdate(eventType: timerEvent, newVal: Double) {
+            if (pieceTimer != nil && !pieceTimer!.timerIsRunning) { return }
             switch eventType {
             case .pieceElapsedTime:
                 let etime = Int(round(newVal))
                 elapsedTime = String(format:"%1d:%02d", etime / 60, etime % 60)
             case .movementSecondsRemaining:
-                secondsLeftInMovement = Int(newVal);
+                secondsLeftInMovement = newVal;
             case .movementOneProgress:
                 move1prog = newVal
             case .movementTwoProgress:
                 move2prog = newVal
             case .movementThreeProgress:
                 move3prog = newVal
-            case .intermissionProgress:
+            case .intermissionProgress:        // This check needed to ignore post-stopped events
                 let itime = Int(round(newVal))
                 intermissionTime = "Break: " + String(format:"%1d:%02d", itime / 60, itime % 60)
             case .movementOneEnd:
@@ -178,6 +182,11 @@ extension RecordPlayView {
                 } else if (piece_playing) {
                     stopPlaying()
                     currentlyPlayingMovement = false
+                    // If no second movement, stop timers
+                    if ( (!Files.isSeedRecording(name: perfName)) &&
+                         (!Files.movementExists(perfName: perfName, movement: "Two")) ) {
+                        endPerformance(recordingIsComplete: false)
+                    }
                 }
             case .movementTwoStart:
                 intermissionTime = ""
@@ -192,6 +201,11 @@ extension RecordPlayView {
                 } else if (piece_playing) {
                     stopPlaying()
                     currentlyPlayingMovement = false
+                    // If no third movement, stop timers
+                    if ( (!Files.isSeedRecording(name: perfName)) &&
+                         (!Files.movementExists(perfName: perfName, movement: "Three")) ) {
+                        endPerformance(recordingIsComplete: false)
+                    }
                 }
             case .movementThreeStart:
                 intermissionTime = ""
@@ -378,6 +392,7 @@ extension RecordPlayView {
         func play() {
             if (piece_paused) {
                 unPausePlaying()
+                isRecordingOrPlaying = true
             } else {
                 hitIt()
             }

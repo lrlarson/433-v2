@@ -30,9 +30,6 @@ enum Files {
     
     static let fileManager = FileManager.default
     
-    static func glebba() {
-    }
-    
     static func clearTempDirectory() throws (FilesError) {
         do {
             let url = getTmpDirURL()
@@ -137,9 +134,15 @@ enum Files {
         return String(format:"%@%@%@", "Movement", movement, appConstants.WAV_FORMAT_EXTENSION)
     }
     
+    static func movementExists(perfName:String, movement:String) -> Bool {
+        return fileManager.fileExists(atPath: storedPerformanceMovementURL(name: perfName, movement: movement).path)
+    }
+    
+/*
     static func getMovementFileNameNoExt(movement:String) -> String {
         return String(format:"%@%@", "Movement", movement)
     }
+ */
     
     static func deleteMovement(movement:String) {
         let url = currentRecordingMovementURL(movement:movement)

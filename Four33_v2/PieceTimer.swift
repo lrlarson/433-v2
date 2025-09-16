@@ -39,6 +39,7 @@ class PieceTimer {
     private var secondIntermission:Bool
     
     private var timer:Timer?
+    public var timerIsRunning:Bool = false
     
     // Convenience time values
     private var pauseOneStart:CFTimeInterval?
@@ -78,6 +79,7 @@ class PieceTimer {
         elapsedTimeAtPause = 0
         startTime = 0
         timer = nil
+        timerIsRunning = false
     }
     
     
@@ -97,6 +99,7 @@ class PieceTimer {
     // only has non-zero value when called by pause action
     func killTimer(saveElapsed:Bool = false)
     {
+        timerIsRunning = false
         if (saveElapsed) {
             // Record accurate stopping time in case of restart
             elapsedTimeAtPause = elapsedTime
@@ -105,6 +108,7 @@ class PieceTimer {
         }
         if (timer != nil) {
             timer!.invalidate()
+            timer = nil
         }
     }
     
@@ -120,10 +124,15 @@ class PieceTimer {
         elapsedTime = elapsedTimeAtPause
         startTime = CFAbsoluteTimeGetCurrent() - elapsedTime
         elapsedTimeAtPause = 0
+        timerIsRunning = true
     }
         
     func timerFired()
     {
+        // If event comes from just-killed timer, ignore
+        if (timer == nil) {
+            return
+        }
         if (callback != nil) {
             elapsedTime = (CFAbsoluteTimeGetCurrent() - startTime)
             if (elapsedTime < pauseOneStart!) {
