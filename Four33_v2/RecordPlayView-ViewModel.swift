@@ -132,7 +132,9 @@ extension RecordPlayView {
             // Switch over the interruption type.
             switch type {
             case .began:
-                displayInterruptedAlert = true
+                if (piece_playing || piece_recording) {
+                    displayInterruptedAlert = true
+                }
                 if (piece_playing) {
                     pausePlaying()
                 }
